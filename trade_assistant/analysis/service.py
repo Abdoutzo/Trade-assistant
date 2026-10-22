@@ -10,6 +10,7 @@ from datetime import UTC, date, datetime, timedelta
 from statistics import median
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..data import store, yahoo
@@ -213,12 +214,25 @@ def get_analysis(session: Session, instrument: Instrument, benchmark: risk.Serie
     if not force and is_fresh(row, instrument):
         return row.data
     data = analyze(session, instrument, benchmark if benchmark is not None else _benchmark(session))
+    _save(session, instrument, row, data)
+    return data
+
+
+def _save(session: Session, instrument: Instrument, row: Analysis | None, data: dict) -> None:
+    """Stores the analysis. Two pages opened together may compute the same one at the same time:
+    the second insert then hits the unique constraint, and simply updates the row the first wrote."""
     if row is None:
         row = Analysis(instrument_id=instrument.id, data=data)
         session.add(row)
     row.data, row.score, row.computed_at = data, data.get("score"), utcnow()
-    session.commit()
-    return data
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        row = session.scalar(select(Analysis).where(Analysis.instrument_id == instrument.id))
+        if row is not None:
+            row.data, row.score, row.computed_at = data, data.get("score"), utcnow()
+            session.commit()
 
 
 def all_analyses(session: Session, force: bool = False) -> list[tuple[Instrument, dict]]:

@@ -57,6 +57,10 @@ class NoModelAvailable(RuntimeError):
     pass
 
 
+NO_KEY = ("Aucune clé d'IA configurée : ajoute NVIDIA_API_KEY (et éventuellement GOOGLE_API_KEY, "
+          "GROQ_API_KEY) dans le fichier .env, dans Render > Environment ou dans les secrets GitHub.")
+
+
 @dataclass(frozen=True)
 class Answer:
     text: str
@@ -120,7 +124,7 @@ def get_model(role: str, tools: list | None = None) -> Runnable:
     """A runnable for the agent: the first model of the chain, the others as fallbacks."""
     entries = chain(role)
     if not entries:
-        raise NoModelAvailable(f"No LLM available for role {role!r}: set at least one API key in .env")
+        raise NoModelAvailable(NO_KEY)
     models: list[Runnable] = []
     for provider, model in entries:
         m: Runnable = chat_model(provider, model, role)
@@ -132,7 +136,7 @@ def ask(role: str, prompt: str, system: str | None = None) -> Answer:
     """One question, one text answer, trying each model of the chain until one succeeds."""
     entries = chain(role)
     if not entries:
-        raise NoModelAvailable(f"No LLM available for role {role!r}: set at least one API key in .env")
+        raise NoModelAvailable(NO_KEY)
     messages: list[BaseMessage] = ([SystemMessage(system)] if system else []) + [HumanMessage(prompt)]
     errors = []
     for provider, model in entries:
@@ -146,7 +150,8 @@ def ask(role: str, prompt: str, system: str | None = None) -> Answer:
             continue
         _record(role, provider, model, start, reply, None)
         return Answer(text=_text(reply.content), provider=provider, model=model)
-    raise NoModelAvailable("All models failed for role " + role + ":\n" + "\n".join(errors))
+    raise NoModelAvailable("Aucun modèle n'a répondu (quotas gratuits atteints ou service indisponible), "
+                           "réessaie plus tard. Détail :\n" + "\n".join(errors))
 
 
 def _text(content: Any) -> str:

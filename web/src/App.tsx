@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import InstrumentPage from "./pages/InstrumentPage";
 import Login from "./pages/Login";
+import NewsPage from "./pages/NewsPage";
 import Placeholder from "./pages/Placeholder";
 import PortfolioPage from "./pages/PortfolioPage";
 import RankingPage from "./pages/RankingPage";
@@ -34,7 +35,7 @@ export default function App() {
         <Route path="analyses" element={<Universe />} />
         <Route path="analyses/:isin" element={<InstrumentPage />} />
         <Route path="classement" element={<RankingPage />} />
-        <Route path="actualites" element={<Placeholder title="Actualités et rapports" brick={4} />} />
+        <Route path="actualites" element={<NewsPage />} />
         <Route path="plan" element={<Placeholder title="Plan du mois" brick={5} />} />
         <Route path="guide" element={<Placeholder title="Guide de l'investisseur" brick={6} />} />
         <Route path="journal" element={<Placeholder title="Journal et performance" brick={8} />} />

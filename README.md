@@ -119,6 +119,21 @@ de chaque fiche. En ligne de commande : `uv run python -m trade_assistant.data r
   version historique et en version prudente ramenée à 7 %/an. Biais rétrospectif signalé : les
   actions sont choisies avec ce que l'on sait aujourd'hui.
 
+## Veille (brique 4)
+
+- **Collecte** gratuite : Google Actualités (français et anglais) et flux Yahoo Finance, pour
+  chaque action de l'univers, chaque soir de semaine (workflow *Actualiser les données*) ou à la
+  demande sur le site.
+- **Tri par l'IA** (modèle rapide) : catégorie, ton, importance pour un actionnaire de long terme,
+  résumé d'une ligne en français. Réponse JSON validée ; si aucun modèle ne répond, des règles par
+  mots-clés prennent le relais (signalé « tri par mots-clés »).
+- **Alertes** : nouvelle majeure, nouvelle notable et négative (prévisions, justice, dirigeants...),
+  variation de cours de 5 % ou plus sur tes valeurs. Bandeau sur le tableau de bord.
+- **Synthèse par entreprise** (modèle de raisonnement) : faits marquants et points à surveiller,
+  chaque phrase liée aux articles numérotés qui l'appuient ; une phrase sans source valide est
+  supprimée avant affichage.
+- **Sans terminal** : onglet *Actions > Tester la veille > Run workflow*.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -161,7 +176,7 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 1 | Données : cours sur 10 ans, comptes annuels (rapports officiels ESEF + Yahoo), univers PEA | fait |
 | 2 | Analyse fondamentale : ratios, risque, score /100 expliqué, classement | fait |
 | 3 | Portefeuille : positions, plans programmés du mois, simulation sur 10 ans et projection | fait |
-| 4 | Veille : actualités et publications, résumés sourcés, alertes | à venir |
+| 4 | Veille : actualités triées par l'IA, alertes, synthèse sourcée par entreprise | fait |
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | à venir |
 | 6 | Guide de l'investisseur : parcours, glossaire, leçon liée à chaque décision | à venir |
 | 7 | Rapport mensuel par e-mail, lancé par GitHub Actions | à venir |

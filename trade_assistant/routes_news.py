@@ -19,9 +19,10 @@ router = APIRouter(prefix="/api", dependencies=[Depends(auth.require_auth)])
 @router.get("/news")
 def news_feed(scope: Literal["mine", "all"] = "mine", days: int = 30, min_importance: int = 1,
               category: str | None = None, session: Session = Depends(get_session)) -> dict:
-    isins = watched(session) if scope == "mine" else None
-    return {"categories": triage.CATEGORIES, "watched": sorted(watched(session)),
-            "items": service.feed(session, isins, min(days, 180), min_importance, category)}
+    mine = watched(session)
+    return {"categories": triage.CATEGORIES, "watched": sorted(mine),
+            "items": service.feed(session, mine if scope == "mine" else None, min(days, 180), min_importance,
+                                  category)}
 
 
 @router.get("/alerts")

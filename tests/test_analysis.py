@@ -236,3 +236,15 @@ def test_api_ranking_and_analysis(session):
         detail = client.get(f"/api/instruments/{fake.ISIN}/analysis").json()
         assert "pillars" in detail and "sector_medians" in detail
         assert client.get("/api/instruments/FR0000120271/analysis").status_code == 404
+
+
+def test_concurrent_computation_of_the_same_analysis(session):
+    """Two pages opened together: the second writer updates instead of failing on the unique key."""
+    i = _stock_with_history(session)
+    with Session(db.get_engine()) as other:
+        service.get_analysis(other, other.get(Instrument, i.id))  # the other request wrote first
+    service._save(session, i, None, {"score": 42})  # this one still believed there was no row
+    from trade_assistant.models import Analysis
+
+    rows = session.query(Analysis).filter_by(instrument_id=i.id).all()
+    assert len(rows) == 1 and rows[0].score == 42

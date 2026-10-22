@@ -176,3 +176,39 @@ export type SimulationData = {
   projection: { horizon_years: number; long_run_rate: number; strategy: Projection; core_only: Projection; strategy_normalized: Projection; core_only_normalized: Projection };
   warnings: string[];
 };
+
+export type NewsRow = {
+  id: number;
+  isin: string | null;
+  company: string | null;
+  title: string;
+  url: string;
+  source: string | null;
+  published_at: string;
+  category: string | null;
+  category_label: string;
+  sentiment: number | null;
+  importance: number | null;
+  summary: string | null;
+  triaged_by: string | null;
+};
+export type AlertRow = {
+  id: number;
+  isin: string;
+  company: string;
+  kind: "news" | "price";
+  severity: number;
+  title: string;
+  detail: string | null;
+  url: string | null;
+  created_at: string;
+  read: boolean;
+};
+export type DigestPoint = { text: string; sources: number[] };
+export type DigestData = {
+  created_at: string;
+  points: DigestPoint[];
+  watch: DigestPoint[];
+  sources: { n: number; title: string; url: string; source: string | null; date: string }[];
+  model: string;
+};

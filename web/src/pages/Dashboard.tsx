@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, Profile } from "../api";
+import { AlertRow, api, Profile } from "../api";
 import Card from "../components/Card";
 import { euros, project } from "../lib/projection";
 
@@ -13,12 +13,14 @@ const SCENARIOS = [
 export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [years, setYears] = useState(15);
+  const [alerts, setAlerts] = useState<AlertRow[]>([]);
 
   useEffect(() => {
     api<Profile>("/profile").then((p) => {
       setProfile(p);
       setYears(p.horizon_years);
     });
+    api<AlertRow[]>("/alerts?unread=true").then(setAlerts).catch(() => setAlerts([]));
   }, []);
 
   const series = useMemo(
@@ -41,6 +43,13 @@ export default function Dashboard() {
           Modifier mon profil
         </Link>
       </div>
+
+      {alerts.length > 0 && (
+        <Link to="/actualites" className="block rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+          <strong>{alerts.length} alerte(s) non lue(s)</strong> : {alerts.slice(0, 2).map((a) => `${a.company} · ${a.title}`).join(" ; ")}
+          {alerts.length > 2 ? "…" : ""}
+        </Link>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card title="Enveloppe">

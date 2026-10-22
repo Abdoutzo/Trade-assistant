@@ -4,6 +4,7 @@ import { api, InstrumentDetail, post, PricePoint } from "../api";
 import AnalysisCard from "../components/AnalysisCard";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
+import NewsCard from "../components/NewsCard";
 import PeaBadge from "../components/PeaBadge";
 import { amount, changeColor, pct, price } from "../lib/format";
 import { METRICS } from "../lib/metrics";
@@ -92,6 +93,8 @@ export default function InstrumentPage() {
       </div>
 
       <AnalysisCard isin={detail.isin} />
+
+      {detail.kind === "stock" && <NewsCard isin={detail.isin} />}
 
       <Card title="Cours">
         <div className="mb-3 flex flex-wrap items-center gap-1 text-sm">

@@ -196,3 +196,14 @@ def test_api(session, monkeypatch):
         assert r.json()["status"] == "approved"
         assert client.post("/api/plans/999/decision", json={"status": "approved"}).status_code == 404
         assert client.post(f"/api/plans/{latest['id']}/decision", json={"status": "maybe"}).status_code == 422
+
+
+def test_command_line_run_and_show(session, monkeypatch, capsys):
+    from trade_assistant.agent import __main__ as cli
+
+    answers(monkeypatch)
+    monkeypatch.setattr(cli, "_fresh_news", lambda s: None)
+    assert cli.main(["run"]) == 0  # prints after the session is closed: no detached object
+    assert "Plan n°1" in capsys.readouterr().out
+    assert cli.main(["show"]) == 0
+    assert "Statut : draft" in capsys.readouterr().out

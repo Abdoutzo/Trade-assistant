@@ -1,16 +1,19 @@
 """The monthly plan from the command line (and from GitHub Actions, on the 1st of each month).
 
     python -m trade_assistant.agent run      prepare this month's plan and save it as a draft
+    python -m trade_assistant.agent show     print the latest plan (no AI call)
 """
 from __future__ import annotations
 
 import argparse
 import sys
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..data import store
 from ..db import get_engine, init_db
+from ..models import MonthlyPlan
 from . import pipeline
 
 
@@ -44,9 +47,29 @@ def run() -> int:
     with Session(get_engine()) as session:
         _ensure_data(session)
         _fresh_news(session)
-        data = pipeline.run(session, lambda step: print(f"… {step}"))
+        data = pipeline.run(session, lambda step: print(f"… {step}", flush=True))
         plan = pipeline.save(session, data)
-    print(f"\nPlan n°{plan.id} ({data['month']}), préparé par : {plan.model}")
+        plan_id, model = plan.id, plan.model  # read while the session is open
+    _print(data, plan_id, model)
+    print("\nCe plan attend ta validation sur le site (Plan du mois). Rien n'a été exécuté.")
+    return 0
+
+
+def show() -> int:
+    """The latest plan, as stored (no AI call)."""
+    init_db()
+    with Session(get_engine()) as session:
+        plan = session.scalar(select(MonthlyPlan).order_by(MonthlyPlan.created_at.desc()).limit(1))
+        if plan is None:
+            print("Aucun plan enregistré.")
+            return 1
+        _print(plan.data, plan.id, plan.model)
+        print(f"\nStatut : {plan.status}")
+    return 0
+
+
+def _print(data: dict, plan_id: int, model: str | None) -> None:
+    print(f"\nPlan n°{plan_id} ({data['month']}), préparé par : {model}")
     if data["fallback_reason"]:
         print(f"ATTENTION : {data['fallback_reason']}")
     for s in data["steps"]:
@@ -70,16 +93,15 @@ def run() -> int:
             print(f"  [gravité {o['severity']}] {o['name']} : {o['text']}")
     if data.get("lesson"):
         print(f"\nLeçon du mois : {data['lesson']['title']}\n  {data['lesson']['text']}")
-    print("\nCe plan attend ta validation sur le site (Plan du mois). Rien n'a été exécuté.")
-    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m trade_assistant.agent")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("run")
-    parser.parse_args(argv)
-    return run()
+    sub.add_parser("show")
+    args = parser.parse_args(argv)
+    return run() if args.command == "run" else show()
 
 
 if __name__ == "__main__":

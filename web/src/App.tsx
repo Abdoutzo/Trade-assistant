@@ -7,6 +7,7 @@ import InstrumentPage from "./pages/InstrumentPage";
 import Login from "./pages/Login";
 import NewsPage from "./pages/NewsPage";
 import Placeholder from "./pages/Placeholder";
+import PlanPage from "./pages/PlanPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import RankingPage from "./pages/RankingPage";
 import Settings from "./pages/Settings";
@@ -36,7 +37,7 @@ export default function App() {
         <Route path="analyses/:isin" element={<InstrumentPage />} />
         <Route path="classement" element={<RankingPage />} />
         <Route path="actualites" element={<NewsPage />} />
-        <Route path="plan" element={<Placeholder title="Plan du mois" brick={5} />} />
+        <Route path="plan" element={<PlanPage />} />
         <Route path="guide" element={<Placeholder title="Guide de l'investisseur" brick={6} />} />
         <Route path="journal" element={<Placeholder title="Journal et performance" brick={8} />} />
         <Route path="reglages" element={<Settings />} />

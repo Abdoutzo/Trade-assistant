@@ -134,6 +134,25 @@ de chaque fiche. En ligne de commande : `uv run python -m trade_assistant.data r
   supprimée avant affichage.
 - **Sans terminal** : onglet *Actions > Tester la veille > Run workflow*.
 
+## Agent (brique 5)
+
+Le 1er de chaque mois (workflow *Préparer le plan du mois*), ou à la demande depuis la page *Plan du
+mois* :
+
+1. **Faits** : l'outil rassemble ce que les briques 1 à 4 ont calculé (profil, portefeuille, plan
+   calculé par les règles, notes, valorisation, risque, actualités et alertes) en faits numérotés
+   F1, F2... Ce sont les seules sources des modèles.
+2. **Analyste** : lit chaque dossier (sélectionné, détenu, ou alternative) et dit renforcer,
+   conserver ou attendre, avec sa confiance et les faits cités.
+3. **Avocat du diable** : attaque l'avis de l'analyste (concentration, prix, nouvelles sous-estimées).
+4. **Gérant** : décide en partant du plan calculé, n'en dévie que sur des faits solides, explique ce
+   qui le ferait changer d'avis et tire une leçon du mois.
+5. **Garde-fous** : un plan qui ne respecte pas exactement tes règles (budget, part du cœur, minimum
+   par ligne, plafonds, liste autorisée) est remplacé par le plan calculé ; un chiffre absent des
+   faits est signalé « non vérifié » ; si l'IA ne répond pas, le plan calculé s'applique.
+6. **Toi** : tu valides ou refuses (avec un commentaire), puis tu règles les plans programmés dans
+   Trade Republic grâce à la check-list. Rien n'est jamais exécuté automatiquement.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -177,7 +196,7 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 2 | Analyse fondamentale : ratios, risque, score /100 expliqué, classement | fait |
 | 3 | Portefeuille : positions, plans programmés du mois, simulation sur 10 ans et projection | fait |
 | 4 | Veille : actualités triées par l'IA, alertes, synthèse sourcée par entreprise | fait |
-| 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | à venir |
+| 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | fait |
 | 6 | Guide de l'investisseur : parcours, glossaire, leçon liée à chaque décision | à venir |
 | 7 | Rapport mensuel par e-mail, lancé par GitHub Actions | à venir |
 | 8 | Journal : chaque recommandation comparée à l'ETF monde dans la durée | à venir |

@@ -212,3 +212,36 @@ export type DigestData = {
   sources: { n: number; title: string; url: string; source: string | null; date: string }[];
   model: string;
 };
+
+export type AgentOrder = { isin: string; name: string; amount: number; role: "core" | "satellite"; reason: string | null; facts: string[]; unverified: number[] };
+export type MonthlyPlanData = {
+  id: number;
+  month: string;
+  created_at: string;
+  status: "draft" | "approved" | "rejected" | "replaced";
+  model: string | null;
+  note: string | null;
+  decided_at: string | null;
+  budget: number;
+  source: "agent" | "rules";
+  fallback_reason: string | null;
+  orders: AgentOrder[];
+  proposal: { isin: string; name: string; amount: number }[];
+  summary: string | null;
+  changes: string | null;
+  change_my_mind: string | null;
+  text_unverified?: number[];
+  lesson: { title: string; text: string } | null;
+  analyst: {
+    overview: string;
+    overview_unverified: number[];
+    companies: { isin: string; name: string; role: string | null; score: number | null; thesis: string; risks: string; stance: string; confidence: number; facts: string[]; unverified: number[] }[];
+  } | null;
+  critic: { isin: string | null; name: string; text: string; severity: number; facts: string[]; unverified: number[] }[];
+  facts: Record<string, string>;
+  steps: { role: string; model: string | null; seconds: number; ok: boolean; error?: string }[];
+  first_payment: { isin: string; name: string; amount: number }[] | null;
+  checklist: string[];
+};
+export type PlanJob = { running: boolean; step: string | null; plan_id: number | null; error: string | null };
+export type PlanSummary = { id: number; month: string; created_at: string; status: string; model: string; source: string; orders: { name: string; amount: number }[] };

@@ -102,3 +102,20 @@ class EsefFiling(Base):
     viewer_url: Mapped[str | None] = mapped_column(Text, default=None)
     facts_found: Mapped[int] = mapped_column(Integer, default=0)
     read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# --- Investor profile ----------------------------------------------------------------------------
+
+class InvestorProfile(Base):
+    """Your investment settings, editable from the website (a single row). Every brick reads it:
+    the monthly plan splits monthly_amount_eur, the risk rules depend on horizon_years..."""
+
+    __tablename__ = "investor_profile"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    account_type: Mapped[str] = mapped_column(String(8))  # "PEA" or "CTO"
+    initial_amount_eur: Mapped[float] = mapped_column(Float)
+    monthly_amount_eur: Mapped[float] = mapped_column(Float)
+    core_share: Mapped[float] = mapped_column(Float)  # part of each payment going to the world ETF
+    horizon_years: Mapped[int] = mapped_column(Integer)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

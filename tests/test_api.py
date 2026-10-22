@@ -76,3 +76,26 @@ def test_llm_test_without_keys_returns_503(client):
 
 def test_llm_test_rejects_unknown_role(client):
     assert client.post("/api/llm/test", json={"role": "magic"}).status_code == 422
+
+
+def test_profile_defaults_then_edited_from_the_site(client):
+    p = client.get("/api/profile").json()
+    assert (p["initial_amount_eur"], p["monthly_amount_eur"], p["core_share"], p["account_type"]) == (
+        500, 100, 0.7, "PEA")
+    new = {"account_type": "PEA", "initial_amount_eur": 1000, "monthly_amount_eur": 150, "core_share": 0.8,
+           "horizon_years": 20}
+    r = client.put("/api/profile", json=new)
+    assert r.status_code == 200 and r.json()["satellite_share"] == 0.2
+    assert client.get("/api/profile").json()["monthly_amount_eur"] == 150  # stored, not just echoed
+
+
+@pytest.mark.parametrize("field, value", [("core_share", 1.5), ("monthly_amount_eur", -10),
+                                          ("account_type", "Livret A"), ("horizon_years", 0)])
+def test_profile_rejects_invalid_values(client, field, value):
+    body = {"account_type": "PEA", "initial_amount_eur": 500, "monthly_amount_eur": 100, "core_share": 0.7,
+            "horizon_years": 15, field: value}
+    assert client.put("/api/profile", json=body).status_code == 422
+
+
+def test_profile_needs_login(with_password, client):
+    assert client.put("/api/profile", json={}).status_code == 401

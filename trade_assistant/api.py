@@ -13,10 +13,11 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Respons
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
-from . import __version__, auth, llm, routes_data
+from . import __version__, auth, llm, profile, routes_data
 from .config import get_settings
-from .db import init_db, ping
+from .db import get_session, init_db, ping
 
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 
@@ -85,11 +86,13 @@ def me(request: Request) -> dict:
 # --- Private API --------------------------------------------------------------------------------
 
 @private.get("/profile")
-def profile() -> dict:
-    s = get_settings()
-    return {"account_type": s.account_type, "initial_amount_eur": s.initial_amount_eur,
-            "monthly_amount_eur": s.monthly_amount_eur, "core_share": s.core_share,
-            "satellite_share": round(1 - s.core_share, 4)}
+def read_profile(session: Session = Depends(get_session)) -> dict:
+    return profile.as_dict(profile.get_profile(session))
+
+
+@private.put("/profile")
+def write_profile(body: profile.ProfileIn, session: Session = Depends(get_session)) -> dict:
+    return profile.as_dict(profile.update_profile(session, body))
 
 
 @private.get("/llm/status")

@@ -18,6 +18,9 @@ quoi acheter et combien, explique pourquoi, et t'apprend à décider seul.
 | **Satellites (30 %)** | 3 à 8 entreprises européennes choisies par l'agent, au maximum 10 % du portefeuille chacune |
 | **Rééquilibrage** | par les nouveaux versements, sans vendre (donc sans impôt ni frais) |
 
+Tous ces paramètres (enveloppe, montants, part ETF/actions, horizon) se changent à tout moment
+sur le site, dans *Réglages > Mon profil d'investissement*.
+
 ## Architecture
 
 ```

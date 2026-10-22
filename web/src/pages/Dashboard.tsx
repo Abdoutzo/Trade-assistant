@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { api, Profile } from "../api";
 import Card from "../components/Card";
 import { euros, project } from "../lib/projection";
@@ -14,7 +15,10 @@ export default function Dashboard() {
   const [years, setYears] = useState(15);
 
   useEffect(() => {
-    api<Profile>("/profile").then(setProfile);
+    api<Profile>("/profile").then((p) => {
+      setProfile(p);
+      setYears(p.horizon_years);
+    });
   }, []);
 
   const series = useMemo(
@@ -31,12 +35,21 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+        <Link to="/reglages" className="text-sm text-brand hover:underline">
+          Modifier mon profil
+        </Link>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card title="Enveloppe">
           <p className="text-2xl font-semibold">{profile.account_type}</p>
-          <p className="text-sm text-slate-500">Trade Republic, plans programmés sans frais</p>
+          <p className="text-sm text-slate-500">
+            {profile.account_type === "PEA"
+              ? "Trade Republic, plans programmés sans frais"
+              : "Compte-titres : tout est accessible, mais 30 % d'impôt sur les gains"}
+          </p>
         </Card>
         <Card title="Versements">
           <p className="text-2xl font-semibold">{euros(profile.monthly_amount_eur)} / mois</p>

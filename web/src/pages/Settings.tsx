@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, LlmStatus, LlmTest, post } from "../api";
 import Card from "../components/Card";
+import ProfileForm from "../components/ProfileForm";
 
 const ROLE_LABELS: Record<string, string> = {
   reasoning: "Analyse approfondie",
@@ -29,6 +30,9 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Réglages</h1>
+      <Card title="Mon profil d'investissement">
+        <ProfileForm />
+      </Card>
       <Card title="Modèles d'IA (offres gratuites)">
         {!status ? (
           <p className="text-slate-500">Chargement…</p>

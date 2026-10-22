@@ -21,13 +21,18 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
 export const post = <T,>(path: string, body: unknown) =>
   api<T>(path, { method: "POST", body: JSON.stringify(body) });
 
+export const put = <T,>(path: string, body: unknown) =>
+  api<T>(path, { method: "PUT", body: JSON.stringify(body) });
+
 export type Me = { authenticated: boolean; login_enabled: boolean };
 export type Profile = {
-  account_type: string;
+  account_type: "PEA" | "CTO";
   initial_amount_eur: number;
   monthly_amount_eur: number;
   core_share: number;
   satellite_share: number;
+  horizon_years: number;
+  updated_at?: string;
 };
 export type LlmStatus = Record<string, { provider: string; model: string }[]>;
 export type LlmTest = { provider: string; model: string; answer: string };

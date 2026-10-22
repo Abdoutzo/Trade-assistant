@@ -56,6 +56,28 @@ modèle a répondu pour chaque rôle, sans jamais afficher de clé.
 Ces secrets servent aux traitements lancés par GitHub (analyse et e-mail du mois). Pour le site
 en ligne, la même clé se met aussi dans Render (voir « Déployer gratuitement »).
 
+## Données (brique 1)
+
+| Source | Ce qu'on en tire | Fiabilité |
+|---|---|---|
+| [filings.xbrl.org](https://filings.xbrl.org) | Comptes annuels officiels des sociétés cotées dans l'UE (format ESEF, depuis 2020) | Référence : chiffres audités |
+| Yahoo Finance | Cours quotidiens sur 10 ans, comptes standardisés des 4 derniers exercices, ISIN vers ticker | API non officielle, recoupée avec les rapports |
+| [GLEIF](https://www.gleif.org) | Entité légale derrière un ISIN, pays du siège social (règle du PEA) | Registre officiel |
+| Euronext | ISIN vers ticker quand Yahoo ne connaît pas l'ISIN | Officiel |
+
+Pour chaque année, l'outil prend le chiffre du rapport officiel quand il existe, sinon celui de
+Yahoo, et signale un écart de plus de 3 % entre les deux (souvent un retraitement). Le bénéfice
+par action vient d'une seule source par entreprise, pour éviter les faux sauts dus aux actions
+gratuites ou aux divisions d'actions.
+
+**Univers de départ** : 8 ETF éligibles PEA (MSCI World, S&P 500, Nasdaq-100, Europe, émergents)
+et 35 grandes entreprises européennes, chaque ISIN vérifié. Sur le site : *Univers et analyses >
+Charger l'univers de départ*. N'importe quel autre ISIN s'ajoute depuis la même page.
+
+**Sans terminal** : onglet *Actions > Tester les données > Run workflow*, saisis un ISIN.
+
+En ligne de commande : `uv run python -m trade_assistant.data seed | add ISIN | refresh | show ISIN`.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -91,7 +113,7 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | # | Brique | État |
 |---|---|---|
 | 0 | Socle : API, site, connexion, routeur de LLM, base de données, CI, déploiement | fait |
-| 1 | Données : cours, fondamentaux sur 10 ans (rapports ESEF et SEC), univers PEA | à venir |
+| 1 | Données : cours sur 10 ans, comptes annuels (rapports officiels ESEF + Yahoo), univers PEA | fait |
 | 2 | Analyse fondamentale : qualité, valorisation, risque, score expliqué | à venir |
 | 3 | Portefeuille et backtest : allocation cœur/satellites, simulation historique | à venir |
 | 4 | Veille : actualités et publications, résumés sourcés, alertes | à venir |

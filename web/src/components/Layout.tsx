@@ -5,7 +5,7 @@ const NAV = [
   ["/", "Tableau de bord"],
   ["/plan", "Plan du mois"],
   ["/portefeuille", "Portefeuille"],
-  ["/analyses", "Analyses"],
+  ["/analyses", "Univers et analyses"],
   ["/actualites", "Actualités"],
   ["/guide", "Guide"],
   ["/journal", "Journal"],

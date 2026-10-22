@@ -3,9 +3,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { api, Me } from "./api";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
+import InstrumentPage from "./pages/InstrumentPage";
 import Login from "./pages/Login";
 import Placeholder from "./pages/Placeholder";
 import Settings from "./pages/Settings";
+import Universe from "./pages/Universe";
 
 export default function App() {
   const [me, setMe] = useState<Me | null>(null);
@@ -27,7 +29,8 @@ export default function App() {
       <Route element={<Layout loginEnabled={me.login_enabled} onLogout={refresh} />}>
         <Route index element={<Dashboard />} />
         <Route path="portefeuille" element={<Placeholder title="Portefeuille" brick={3} />} />
-        <Route path="analyses" element={<Placeholder title="Analyses d'entreprises" brick={2} />} />
+        <Route path="analyses" element={<Universe />} />
+        <Route path="analyses/:isin" element={<InstrumentPage />} />
         <Route path="actualites" element={<Placeholder title="Actualités et rapports" brick={4} />} />
         <Route path="plan" element={<Placeholder title="Plan du mois" brick={5} />} />
         <Route path="guide" element={<Placeholder title="Guide de l'investisseur" brick={6} />} />

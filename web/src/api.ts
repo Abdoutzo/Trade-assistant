@@ -31,3 +31,41 @@ export type Profile = {
 };
 export type LlmStatus = Record<string, { provider: string; model: string }[]>;
 export type LlmTest = { provider: string; model: string; answer: string };
+
+export type InstrumentSummary = {
+  isin: string;
+  symbol: string;
+  name: string;
+  kind: "stock" | "etf";
+  currency: string | null;
+  exchange: string | null;
+  country: string | null;
+  sector: string | null;
+  industry: string | null;
+  pea_eligible: boolean | null;
+  pea_reason: string | null;
+  last_close: number | null;
+  last_day: string | null;
+  change_1y: number | null;
+  prices_updated_at: string | null;
+  fundamentals_updated_at: string | null;
+};
+
+export type FundamentalCell = {
+  value: number;
+  source: "esef" | "yahoo";
+  url: string | null;
+  currency: string | null;
+  other_value: number | null;
+  gap: number | null;
+} | null;
+
+export type InstrumentDetail = InstrumentSummary & {
+  lei: string | null;
+  years: string[];
+  fundamentals: Record<string, FundamentalCell[]>;
+  reports: { period_end: string; url: string }[];
+};
+
+export type PricePoint = { day: string; close: number; adj_close: number };
+export type SeedState = { running: boolean; done: number; total: number; current: string | null; errors: string[] };

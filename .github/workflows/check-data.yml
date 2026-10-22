@@ -1,0 +1,22 @@
+# Lancement à la main depuis GitHub : onglet Actions > "Tester les données" > Run workflow,
+# puis saisis un ISIN. Affiche ce que l'outil sait de la valeur : PEA, cours, comptes annuels.
+name: Tester les données
+
+on:
+  workflow_dispatch:
+    inputs:
+      isin:
+        description: "ISIN de l'action ou de l'ETF (ex. FR0000120073 pour Air Liquide)"
+        required: true
+        default: FR0000120073
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen
+      - run: uv run python -m trade_assistant.data check "$ISIN"
+        env:
+          ISIN: ${{ inputs.isin }}

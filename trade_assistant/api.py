@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import __version__, auth, llm
+from . import __version__, auth, llm, routes_data
 from .config import get_settings
 from .db import init_db, ping
 
@@ -115,6 +115,7 @@ def llm_test(body: LlmTestRequest) -> dict:
 
 app.include_router(public)
 app.include_router(private)
+app.include_router(routes_data.router)
 
 
 # --- Website ------------------------------------------------------------------------------------

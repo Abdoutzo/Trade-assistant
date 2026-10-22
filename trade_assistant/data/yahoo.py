@@ -140,3 +140,19 @@ def fundamentals(symbol: str) -> list[Figure]:
             figures.append(Figure(date.fromisoformat(point["asOfDate"]), metric, value,
                                   point.get("currencyCode")))
     return figures
+
+
+_fx_cache: dict[tuple[str, str, date], float] = {}
+
+
+def fx_rate(from_ccy: str, to_ccy: str) -> float:
+    """How many to_ccy for 1 from_ccy (latest close), e.g. EUR -> USD for a company reporting in dollars."""
+    if from_ccy == to_ccy:
+        return 1.0
+    key = (from_ccy, to_ccy, date.today())
+    if key not in _fx_cache:
+        rows = chart(f"{from_ccy}{to_ccy}=X", "5d").rows
+        if not rows:
+            raise SourceError(f"Pas de taux de change {from_ccy}/{to_ccy}")
+        _fx_cache[key] = rows[-1].close
+    return _fx_cache[key]

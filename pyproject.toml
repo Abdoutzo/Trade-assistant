@@ -43,3 +43,7 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends"]
+
+[tool.ruff.lint.per-file-ignores]
+# Explanations written for the reader: long French sentences read better unbroken.
+"trade_assistant/analysis/scoring.py" = ["E501"]

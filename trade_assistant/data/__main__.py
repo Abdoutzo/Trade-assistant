@@ -5,6 +5,7 @@
     python -m trade_assistant.data refresh [ISIN ...]   prices for all, accounts when older than 7 days
     python -m trade_assistant.data show FR0000120073    what we know about an instrument
     python -m trade_assistant.data check FR0000120073   add + refresh + show (used by the GitHub button)
+    python -m trade_assistant.data rank                 the universe ranked by score
 """
 from __future__ import annotations
 
@@ -56,6 +57,8 @@ def _refresh(session: Session, isins: list[str], force: bool) -> int:
             failures += 1
             print(f"[KO] {i.isin}: {e}")
         time.sleep(0.3)
+    from ..analysis import service  # analyses follow the data they are computed from
+    service.all_analyses(session, force=True)
     return failures
 
 
@@ -97,6 +100,46 @@ def _show(session: Session, isin: str) -> int:
         for d, m, c in gaps:
             print(f"Écart entre sources : {m} {d.year} = {_money(c.value)} ({c.source}) "
                   f"contre {_money(c.other_value)} ({c.gap:.1%})")
+    _show_analysis(session, i)
+    return 0
+
+
+def _fmt(value: float | None, fmt: str) -> str:
+    if value is None:
+        return "-"
+    return f"{value:.1%}" if fmt == "pct" else f"{value:.2f}"
+
+
+def _show_analysis(session: Session, instrument) -> None:
+    from ..analysis import service
+
+    data = service.get_analysis(session, instrument, force=True)
+    print(f"\nAnalyse : {data.get('score') if data.get('score') is not None else '-'}/100. {data['verdict']}")
+    for pillar in (data.get("pillars") or {}).values():
+        print(f"  {pillar['label']:<18} {pillar['score'] if pillar['score'] is not None else '-':>4}")
+        for m in pillar["metrics"]:
+            if m["value"] is not None:
+                print(f"      {m['label']:<48} {_fmt(m['value'], m['fmt']):>9}  note {m['score']:>3}"
+                      f"  ({m['detail'] or ''})")
+    if data.get("strengths"):
+        print("Points forts : " + ", ".join(data["strengths"]))
+    if data.get("weaknesses"):
+        print("Points faibles : " + ", ".join(data["weaknesses"]))
+    for w in data.get("warnings", []):
+        print("Attention : " + w)
+
+
+def _rank(session: Session) -> int:
+    from ..analysis import service
+
+    rows = [(i, d) for i, d in service.all_analyses(session) if i.kind == "stock"]
+    rows.sort(key=lambda x: -(x[1].get("score") or -1))
+    print(f"{'Note':>4}  {'Entreprise':<40} {'Qual':>5} {'Sol':>5} {'Croi':>5} {'Valo':>5} {'Risq':>5}")
+    for i, d in rows:
+        p = {k: v["score"] for k, v in (d.get("pillars") or {}).items()}
+        cells = "".join(f"{p.get(k) if p.get(k) is not None else '-':>6}"
+                        for k in ("quality", "solidity", "growth", "valuation", "risk"))
+        print(f"{d.get('score') if d.get('score') is not None else '-':>4}  {i.name[:40]:<40}{cells}")
     return 0
 
 
@@ -110,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
     refresh.add_argument("--force", action="store_true", help="relire les comptes même s'ils sont récents")
     sub.add_parser("show").add_argument("isin")
     sub.add_parser("check").add_argument("isin")
+    sub.add_parser("rank")
     args = parser.parse_args(argv)
 
     init_db()
@@ -120,6 +164,8 @@ def main(argv: list[str] | None = None) -> int:
             return 1 if _add(session, args.isins) else 0
         if args.command == "refresh":
             return 1 if _refresh(session, args.isins, args.force) else 0
+        if args.command == "rank":
+            return _rank(session)
         if args.command == "show":
             return _show(session, args.isin.upper())
         failures = _add(session, [args.isin]) or _refresh(session, [args.isin.upper()], force=True)

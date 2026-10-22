@@ -155,6 +155,9 @@ def _run_seed() -> None:
                 seed_job.errors.append(f"{isin}: {e}")
                 log.exception("Seeding %s failed", isin)
             seed_job.done += 1
+        seed_job.current = "analyses"
+        from .analysis import service  # computed once all data is there (needs the benchmark)
+        service.all_analyses(session, force=True)
     seed_job.current = None
     seed_job.running = False
 

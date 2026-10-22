@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
-from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -119,3 +119,17 @@ class InvestorProfile(Base):
     core_share: Mapped[float] = mapped_column(Float)  # part of each payment going to the world ETF
     horizon_years: Mapped[int] = mapped_column(Integer)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+# --- Brick 2: analysis ---------------------------------------------------------------------------
+
+class Analysis(Base):
+    """Latest analysis of an instrument (ratios, risk, score), recomputed when its data changes."""
+
+    __tablename__ = "analyses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), unique=True)
+    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    score: Mapped[float | None] = mapped_column(Float, default=None)
+    data: Mapped[dict] = mapped_column(JSON)

@@ -9,7 +9,7 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from ..models import EsefFiling, Fundamental, Instrument, Price, utcnow
+from ..models import Analysis, EsefFiling, Fundamental, Instrument, Price, utcnow
 from . import esef, euronext, gleif, universe, yahoo
 from .http import SourceError
 
@@ -65,7 +65,7 @@ def list_instruments(session: Session) -> list[Instrument]:
 
 
 def remove_instrument(session: Session, instrument: Instrument) -> None:
-    for table in (Price, Fundamental, EsefFiling):
+    for table in (Price, Fundamental, EsefFiling, Analysis):
         session.execute(delete(table).where(table.instrument_id == instrument.id))
     session.delete(instrument)
     session.commit()
@@ -206,6 +206,18 @@ def fundamentals_table(session: Session, instrument: Instrument) -> dict[date, d
     # Drop years with a stray figure only (e.g. opening equity of the oldest report).
     table = {d: row for d, row in table.items() if len(row) >= 3}
     return dict(sorted(table.items()))
+
+
+def fundamentals_by_source(session: Session, instrument: Instrument
+                           ) -> tuple[dict[str, dict[date, dict[str, float]]], dict[str, str]]:
+    """Raw accounts kept apart by source (for ratios that must not mix them), and each source's currency."""
+    accounts: dict[str, dict[date, dict[str, float]]] = defaultdict(lambda: defaultdict(dict))
+    currencies: dict[str, str] = {}
+    for f in session.scalars(select(Fundamental).where(Fundamental.instrument_id == instrument.id)):
+        accounts[f.source][f.period_end][f.metric] = f.value
+        if f.currency and f.metric != "shares":
+            currencies.setdefault(f.source, f.currency)
+    return {s: dict(years) for s, years in accounts.items()}, currencies
 
 
 def is_stale(updated_at: datetime | None, max_age: timedelta) -> bool:

@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import InstrumentPage from "./pages/InstrumentPage";
 import Login from "./pages/Login";
 import Placeholder from "./pages/Placeholder";
+import PortfolioPage from "./pages/PortfolioPage";
 import RankingPage from "./pages/RankingPage";
 import Settings from "./pages/Settings";
 import Universe from "./pages/Universe";
@@ -29,7 +30,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout loginEnabled={me.login_enabled} onLogout={refresh} />}>
         <Route index element={<Dashboard />} />
-        <Route path="portefeuille" element={<Placeholder title="Portefeuille" brick={3} />} />
+        <Route path="portefeuille" element={<PortfolioPage />} />
         <Route path="analyses" element={<Universe />} />
         <Route path="analyses/:isin" element={<InstrumentPage />} />
         <Route path="classement" element={<RankingPage />} />

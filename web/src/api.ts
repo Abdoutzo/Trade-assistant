@@ -33,6 +33,10 @@ export type Profile = {
   satellite_share: number;
   horizon_years: number;
   updated_at?: string;
+  core_isin: string;
+  satellites_count: number;
+  max_position_share: number;
+  min_order_eur: number;
 };
 export type LlmStatus = Record<string, { provider: string; model: string }[]>;
 export type LlmTest = { provider: string; model: string; answer: string };
@@ -116,3 +120,59 @@ export type RankingRow = {
   return_1y: number | null;
 };
 export type Ranking = { pillars: Record<string, string>; rows: RankingRow[] };
+
+export type PositionLine = {
+  isin: string;
+  name: string;
+  kind: string | null;
+  sector: string | null;
+  role: "core" | "satellite";
+  quantity: number;
+  average_cost: number | null;
+  cost: number;
+  price: number | null;
+  value: number | null;
+  gain: number | null;
+  gain_pct: number | null;
+  weight: number | null;
+};
+export type TransactionRow = { id: number; day: string; isin: string; side: "buy" | "sell"; quantity: number; price_eur: number; fees_eur: number; note: string | null };
+export type PortfolioData = {
+  total_value: number;
+  contributions: number;
+  gain: number;
+  core_weight: number | null;
+  core_target: number;
+  sectors: Record<string, number>;
+  positions: PositionLine[];
+  transactions: TransactionRow[];
+  warnings: string[];
+  rules: { core_isin: string; satellites_count: number; max_position_share: number; min_order_eur: number };
+};
+export type PlanOrder = { isin: string; name: string; amount: number; role: "core" | "satellite"; reason?: string };
+export type PlanData = {
+  monthly_amount: number;
+  orders: PlanOrder[];
+  targets: { isin: string; name: string; sector: string | null; score: number | null; pinned: boolean; held: boolean; reason: string }[];
+  first_payment: PlanOrder[] | null;
+};
+export type SimStats = {
+  final_value: number;
+  invested: number;
+  gain: number;
+  money_weighted_return: number | null;
+  time_weighted_return: number | null;
+  volatility: number | null;
+  max_drawdown: number | null;
+  worst_12_months: number | null;
+};
+export type Projection = { invested: number; p10: number; p50: number; p90: number; loss_probability: number } | null;
+export type SimulationData = {
+  years: number;
+  satellites: { isin: string; name: string }[];
+  chart: { days: string[]; strategy: number[]; core_only: number[]; invested: number[] };
+  strategy: SimStats;
+  core_only: SimStats;
+  projection: { horizon_years: number; long_run_rate: number; strategy: Projection; core_only: Projection; strategy_normalized: Projection; core_only_normalized: Projection };
+  warnings: string[];
+};

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { api, Profile, put } from "../api";
+import { api, InstrumentSummary, Profile, put } from "../api";
 import { euros } from "../lib/projection";
 
 const input = "w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 dark:border-slate-700";
@@ -8,9 +8,11 @@ const input = "w-full rounded-md border border-slate-300 bg-transparent px-3 py-
 export default function ProfileForm() {
   const [form, setForm] = useState<Profile | null>(null);
   const [message, setMessage] = useState("");
+  const [etfs, setEtfs] = useState<InstrumentSummary[]>([]);
 
   useEffect(() => {
     api<Profile>("/profile").then(setForm);
+    api<InstrumentSummary[]>("/instruments").then((all) => setEtfs(all.filter((i) => i.kind === "etf" && i.pea_eligible)));
   }, []);
 
   if (!form) return <p className="text-slate-500">Chargement…</p>;
@@ -28,6 +30,10 @@ export default function ProfileForm() {
         monthly_amount_eur: form.monthly_amount_eur,
         core_share: form.core_share,
         horizon_years: form.horizon_years,
+        core_isin: form.core_isin,
+        satellites_count: form.satellites_count,
+        max_position_share: form.max_position_share,
+        min_order_eur: form.min_order_eur,
       });
       setForm(saved);
       setMessage("Profil enregistré.");
@@ -74,6 +80,34 @@ export default function ProfileForm() {
           moment de vendre.
         </p>
       )}
+      <p className="mt-2 text-sm font-medium sm:col-span-2">Règles du portefeuille</p>
+      <label className="text-sm">
+        ETF du cœur
+        <select value={form.core_isin} onChange={(e) => set("core_isin", e.target.value)} className={`${input} mt-1`}>
+          {etfs.map((i) => (
+            <option key={i.isin} value={i.isin}>
+              {i.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="text-sm">
+        Nombre d'actions visé
+        <input type="number" min={0} max={15} value={form.satellites_count} onChange={(e) => set("satellites_count", +e.target.value)} className={`${input} mt-1`} />
+      </label>
+      <label className="text-sm">
+        Plafond par action (% du portefeuille)
+        <input type="number" min={2} max={50} value={Math.round(form.max_position_share * 100)} onChange={(e) => set("max_position_share", +e.target.value / 100)} className={`${input} mt-1`} />
+      </label>
+      <label className="text-sm">
+        Montant minimum par plan (€)
+        <input type="number" min={1} max={1000} value={form.min_order_eur} onChange={(e) => set("min_order_eur", +e.target.value)} className={`${input} mt-1`} />
+      </label>
+      <p className="text-xs text-slate-500 sm:col-span-2">
+        Avec {euros(form.monthly_amount_eur - core)} par mois pour les actions et {euros(form.min_order_eur)} minimum par plan, au plus{" "}
+        {Math.floor((form.monthly_amount_eur - core) / Math.max(form.min_order_eur, 1))} action(s) sont alimentées chaque mois ; les
+        autres attendent leur tour.
+      </p>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90">Enregistrer</button>
         {message && <span className="text-sm text-slate-600 dark:text-slate-300">{message}</span>}

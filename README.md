@@ -103,6 +103,22 @@ les ratios industriels qui n'ont pas de sens pour elles.
 Sur le site : *Classement* (tri par note ou par pilier, filtre par secteur) et la carte *Analyse*
 de chaque fiche. En ligne de commande : `uv run python -m trade_assistant.data rank`.
 
+## Portefeuille (brique 3)
+
+- **Positions** calculées à partir de tes transactions Trade Republic (saisies sur le site), au
+  coût moyen, valorisées en euros au dernier cours.
+- **Plans du mois** : Trade Republic ne facture pas les plans d'investissement programmés (un
+  ordre manuel coûte 1 €). L'outil propose donc un montant fixe par ligne : le cœur ETF, puis
+  autant d'actions que le budget le permet (10 € minimum par plan), les plus en retard sur leur
+  cible d'abord. Une action au-delà de 10 % du portefeuille n'est plus renforcée. Le
+  rééquilibrage se fait par les nouveaux versements, sans vendre.
+- **Sélection** : tes actions, celles que tu épingles, puis les meilleures notes (60/100 minimum,
+  2 par secteur au plus). Tu peux exclure n'importe quelle action.
+- **Simulation** : les mêmes règles rejouées mois par mois sur 5 à 15 ans, comparées à 100 % ETF
+  monde, puis une fourchette de résultats à ton horizon (tirage de blocs de 12 mois du passé), en
+  version historique et en version prudente ramenée à 7 %/an. Biais rétrospectif signalé : les
+  actions sont choisies avec ce que l'on sait aujourd'hui.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -144,7 +160,7 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 0 | Socle : API, site, connexion, routeur de LLM, base de données, CI, déploiement | fait |
 | 1 | Données : cours sur 10 ans, comptes annuels (rapports officiels ESEF + Yahoo), univers PEA | fait |
 | 2 | Analyse fondamentale : ratios, risque, score /100 expliqué, classement | fait |
-| 3 | Portefeuille et backtest : allocation cœur/satellites, simulation historique | à venir |
+| 3 | Portefeuille : positions, plans programmés du mois, simulation sur 10 ans et projection | fait |
 | 4 | Veille : actualités et publications, résumés sourcés, alertes | à venir |
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | à venir |
 | 6 | Guide de l'investisseur : parcours, glossaire, leçon liée à chaque décision | à venir |

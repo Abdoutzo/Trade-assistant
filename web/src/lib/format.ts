@@ -39,3 +39,7 @@ export const scoreColor = (s: number | null | undefined) =>
 
 export const barColor = (s: number | null | undefined) =>
   s == null ? "bg-slate-300" : s >= 70 ? "bg-emerald-500" : s >= 55 ? "bg-lime-500" : s >= 40 ? "bg-amber-500" : "bg-red-500";
+
+/** A unit price in euros, with cents: 6.1 -> "6,10 €". */
+export const unitEuros = (x: number) =>
+  x.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 });

@@ -5,9 +5,11 @@ import json
 import logging
 import time
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 from sqlalchemy import select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from .. import llm
@@ -45,6 +47,8 @@ def run(session: Session, progress: Callable[[str], None] = lambda step: None) -
     """Prepares this month's plan. Never raises because of the AI: at worst, the calculated plan."""
     progress("Rassemblement des faits (notes, portefeuille, actualités)")
     ctx = facts.build(session)
+    # The AI takes minutes: never keep a database transaction open meanwhile (Neon closes it).
+    session.commit()
     names = {c.isin: c.name for c in ctx.companies.values()}
     core_isin = ctx.profile["core_isin"]
     names[core_isin] = next((o["name"] for o in ctx.proposal["orders"] if o["isin"] == core_isin),
@@ -57,8 +61,9 @@ def run(session: Session, progress: Callable[[str], None] = lambda step: None) -
                   "change_my_mind": None, "lesson": None}
     block = _companies_block(ctx)
 
-    def step(role: str, system: str, prompt: str, schema):
-        progress(STEP_LABELS[role])
+    def step(role: str, system: str, prompt: str, schema, quiet: bool = False):
+        if not quiet:
+            progress(STEP_LABELS[role])
         start = time.monotonic()
         try:
             answer, model = roles.ask(system, prompt, schema)
@@ -71,7 +76,9 @@ def run(session: Session, progress: Callable[[str], None] = lambda step: None) -
             log.warning("Agent role %s failed: %s", role, e)
             return None
 
-    analyst = step("analyst", roles.ANALYST, f"Faits :\n{block}", roles.AnalystAnswer)
+    progress(STEP_LABELS["analyst"])
+    analyst = _analyst(ctx, step)
+    _merge_steps(steps, "analyst")
     if analyst is None:
         return _fallback(data, ctx, names,
                          "L'analyste (IA) n'a pas pu répondre : plan calculé par les règles.")
@@ -126,6 +133,42 @@ def run(session: Session, progress: Callable[[str], None] = lambda step: None) -
     return data
 
 
+def _merge_steps(steps: list[dict], role: str) -> None:
+    """The analyst runs once per company: one line in the report, with the slowest call's time."""
+    mine = [s for s in steps if s["role"] == role]
+    if len(mine) <= 1:
+        return
+    ok = [s for s in mine if s["ok"]]
+    merged = {"role": role, "model": ", ".join(sorted({s["model"] for s in ok})) or None,
+              "seconds": max(s["seconds"] for s in mine), "ok": bool(ok), "calls": len(mine)}
+    if len(ok) < len(mine):
+        merged["error"] = f"{len(mine) - len(ok)} entreprise(s) sur {len(mine)} sans réponse"
+    steps[:] = [s for s in steps if s["role"] != role] + [merged]
+
+
+def _analyst(ctx: facts.Context, step) -> roles.AnalystAnswer | None:
+    """One call per company, 4 at a time: short answers, fast and independent. A company whose
+    call fails is simply left out; no answer at all means no analyst."""
+    general = ctx.render(ctx.general)
+    companies = list(ctx.companies.values())
+    if not companies:
+        return roles.AnalystAnswer(companies=[],
+                                   overview="Aucune action sélectionnée : tout va à l'ETF monde.")
+
+    def one(c: facts.Company) -> roles.AnalystAnswer | None:
+        block = f"{general}\n\n## {c.name} (ISIN {c.isin}, {ROLE_NAMES[c.role]})\n{ctx.render(c.facts)}"
+        return step("analyst", roles.ANALYST, f"Faits :\n{block}", roles.AnalystAnswer, quiet=True)
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        answers = list(pool.map(one, companies))
+    found = [a for a in answers if a is not None]
+    if not found:
+        return None
+    return roles.AnalystAnswer(companies=[c for a in found for c in a.companies],
+                               overview=" ".join(a.overview for a in found[:1] if a.overview),
+                               facts=[f for a in found for f in a.facts])
+
+
 def _fallback(data: dict, ctx: facts.Context, names: dict, reason: str) -> dict:
     data["fallback_reason"] = reason
     data["orders"] = [{"isin": o["isin"], "name": o["name"], "amount": o["amount"], "role": o["role"],
@@ -139,10 +182,18 @@ def _fallback(data: dict, ctx: facts.Context, names: dict, reason: str) -> dict:
 
 def save(session: Session, data: dict) -> MonthlyPlan:
     models = sorted({s["model"] for s in data["steps"] if s.get("model")})
-    plan = MonthlyPlan(month=data["month"], data=data, model=", ".join(models) or "règles")
-    session.add(plan)
-    session.commit()
-    return plan
+    for attempt in range(2):
+        plan = MonthlyPlan(month=data["month"], data=data, model=", ".join(models) or "règles")
+        session.add(plan)
+        try:
+            session.commit()
+            return plan
+        except DBAPIError:
+            # A connection closed by the database during a long wait: retry once on a fresh one.
+            session.rollback()
+            if attempt:
+                raise
+    raise AssertionError("unreachable")
 
 
 def decide(session: Session, plan_id: int, status: str, note: str | None = None) -> MonthlyPlan:

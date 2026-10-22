@@ -103,7 +103,10 @@ def chat_model(provider: str, model: str, role: str, settings: Settings | None =
     settings = settings or get_settings()
     spec = PROVIDERS[provider]
     api_key = getattr(settings, spec.key_field)
-    common: dict[str, Any] = dict(temperature=0, max_retries=1, timeout=120,
+    # A big model that thinks can take minutes: long timeout, and no retry on the same model (the
+    # next one of the chain is tried instead, a timeout rarely fixes itself in a few seconds).
+    deep = role == "reasoning"
+    common: dict[str, Any] = dict(temperature=0, max_retries=0 if deep else 1, timeout=300 if deep else 120,
                                   rate_limiter=_rate_limiter(provider))
     if provider == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
@@ -116,8 +119,9 @@ def chat_model(provider: str, model: str, role: str, settings: Settings | None =
     if "nemotron" in model:
         # Nemotron "thinks" before answering: worth it for deep analysis, wasted on quick tasks.
         extra["chat_template_kwargs"] = {"enable_thinking": role == "reasoning"}
+    # Streaming: the answer arrives in pieces, so a long answer is never cut by the read timeout.
     return ChatOpenAI(model=model, base_url=spec.base_url, api_key=api_key, max_tokens=8000,
-                      extra_body=extra or None, **common)
+                      extra_body=extra or None, streaming=True, stream_usage=True, **common)
 
 
 def get_model(role: str, tools: list | None = None) -> Runnable:

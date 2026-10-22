@@ -81,8 +81,40 @@ FILINGS = {"data": [
 ]}
 
 
+GOOGLE_RSS = """<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel>
+<item><title>Air Liquide abaisse ses prévisions annuelles - Les Echos</title>
+<link>https://news.google.com/rss/articles/warning</link><pubDate>{d1}</pubDate>
+<source url="https://www.lesechos.fr">Les Echos</source></item>
+<item><title>Air Liquide progresse de 0,8% - Boursorama</title>
+<link>https://news.google.com/rss/articles/noise</link><pubDate>{d2}</pubDate>
+<source url="https://www.boursorama.com">Boursorama</source></item>
+<item><title>TotalEnergies signe un contrat géant - Reuters</title>
+<link>https://news.google.com/rss/articles/other-company</link><pubDate>{d2}</pubDate>
+<source url="https://www.reuters.com">Reuters</source></item>
+</channel></rss>"""
+YAHOO_RSS = """<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel>
+<item><title>Air Liquide : 4 milliards d'euros de rachats d'actions</title>
+<link>https://www.capital.fr/air-liquide-rachats</link><pubDate>{d2}</pubDate>
+<description>Le géant des gaz industriels annonce un programme de rachat d'actions.</description></item>
+<item><title>Air Liquide abaisse ses prévisions annuelles</title>
+<link>https://www.capital.fr/duplicate</link><pubDate>{d2}</pubDate>
+<description>Même nouvelle, autre site.</description></item>
+</channel></rss>"""
+
+
+def _rfc822(days_ago: int) -> str:
+    from datetime import timedelta
+    from email.utils import format_datetime
+
+    return format_datetime(datetime.now(UTC) - timedelta(days=days_ago))
+
+
 def handler(request: httpx.Request) -> httpx.Response:
     url, q = request.url, request.url.params
+    if url.host == "news.google.com":
+        return httpx.Response(200, text=GOOGLE_RSS.format(d1=_rfc822(1), d2=_rfc822(3)))
+    if url.host == "feeds.finance.yahoo.com":
+        return httpx.Response(200, text=YAHOO_RSS.format(d2=_rfc822(2)))
     if url.host == "query2.finance.yahoo.com":
         if url.path == "/v1/finance/search":
             if q["q"] == ISIN:

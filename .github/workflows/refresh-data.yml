@@ -1,0 +1,28 @@
+# Met à jour les cours (et les comptes de plus de 7 jours) directement dans la base Neon,
+# chaque soir de semaine après la clôture des bourses européennes, même si le site dort.
+# Nécessite le secret DATABASE_URL (Settings > Secrets and variables > Actions).
+name: Actualiser les données
+
+on:
+  schedule:
+    - cron: "17 18 * * 1-5"  # 18h17 UTC, après la clôture de 17h30 à Paris
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen --extra postgres
+      - name: Check that the database is configured
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Ajoute le secret DATABASE_URL (chaîne de connexion Neon) dans Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+      - run: uv run python -m trade_assistant.data refresh
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

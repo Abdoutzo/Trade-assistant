@@ -28,3 +28,30 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  # The image deployed on Render, run against a real Postgres (like Neon): build, start, load data.
+  docker:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t trade-assistant .
+      - name: Start the container as in production
+        run: |
+          docker run -d --name app --network host -e PORT=8000 -e APP_PASSWORD=ci-password \
+            -e SECRET_KEY=ci-secret-key-of-at-least-32-characters \
+            -e DATABASE_URL=postgresql://postgres:test@localhost:5432/postgres trade-assistant
+          for i in $(seq 1 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
+          curl -sf localhost:8000/api/health | grep '"database":true'
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8000/api/profile)" = 401
+          curl -sf localhost:8000/ | grep -q '<div id="root">'
+      - name: Load an instrument into Postgres from the image
+        run: docker exec app python -m trade_assistant.data check FR0000120073
+      - if: failure()
+        run: docker logs app

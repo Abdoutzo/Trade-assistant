@@ -225,3 +225,21 @@ class Digest(Base):
     watch: Mapped[list] = mapped_column(JSON)  # [{"text", "sources": [n]}]
     sources: Mapped[list] = mapped_column(JSON)  # [{"n", "title", "url", "source", "date"}]
     model: Mapped[str] = mapped_column(String(160))
+
+
+# --- Brick 5: the agent's monthly plans ----------------------------------------------------------
+
+class MonthlyPlan(Base):
+    """A plan prepared by the agent. Nothing happens until you approve it, and even then you are the
+    one who sets the savings plans in Trade Republic."""
+
+    __tablename__ = "monthly_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    month: Mapped[str] = mapped_column(String(7), index=True)  # "2026-10"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    status: Mapped[str] = mapped_column(String(10), default="draft")  # draft | approved | rejected
+    data: Mapped[dict] = mapped_column(JSON)
+    model: Mapped[str | None] = mapped_column(String(160), default=None)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    note: Mapped[str | None] = mapped_column(Text, default=None)  # your comment when deciding

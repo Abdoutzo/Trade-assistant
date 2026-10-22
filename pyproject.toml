@@ -49,3 +49,6 @@ extend-immutable-calls = ["fastapi.Depends"]
 "trade_assistant/analysis/scoring.py" = ["E501"]
 # Keyword lists and the prompt read better on one line each.
 "trade_assistant/news/triage.py" = ["E501"]
+# The agent's facts and prompts are sentences for the model.
+"trade_assistant/agent/facts.py" = ["E501"]
+"trade_assistant/agent/roles.py" = ["E501"]

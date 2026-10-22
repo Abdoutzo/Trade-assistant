@@ -103,6 +103,10 @@ Tests : `uv run pytest` et `uv run ruff check .`
    `render.yaml` décrit tout). Renseigne `APP_PASSWORD` (long !), `DATABASE_URL` et tes clés
    d'API. `SECRET_KEY` est généré automatiquement.
 3. Ouvre l'adresse `https://trade-assistant-xxxx.onrender.com` et connecte-toi.
+4. *Univers et analyses > Charger l'univers de départ*.
+5. Pour que les cours se mettent à jour chaque soir même quand le site dort : ajoute la même
+   chaîne Neon en secret GitHub `DATABASE_URL` (*Settings > Secrets and variables > Actions*).
+   Le workflow *Actualiser les données* tourne alors les soirs de semaine à 18h17 UTC.
 
 Sur l'offre gratuite, le site s'endort après 15 minutes sans visite et se réveille en environ une
 minute. Les traitements lourds (collecte, analyse, e-mail mensuel) tournent dans GitHub Actions,

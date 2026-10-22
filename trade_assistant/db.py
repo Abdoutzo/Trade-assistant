@@ -5,7 +5,7 @@ from collections.abc import Iterator
 from functools import lru_cache
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, text
+from sqlalchemy import Engine, create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from .config import get_settings
@@ -34,10 +34,36 @@ def get_engine() -> Engine:
 
 
 def init_db() -> None:
-    """Create the missing tables (the models of every brick register themselves on Base)."""
+    """Create the missing tables and columns (the models of every brick register on Base)."""
     from . import models  # noqa: F401  (import registers the tables)
 
-    Base.metadata.create_all(get_engine())
+    engine = get_engine()
+    Base.metadata.create_all(engine)
+    add_missing_columns(engine)
+
+
+def add_missing_columns(engine: Engine) -> list[str]:
+    """Light migration: a column added to a model later is added to the existing table.
+
+    create_all only creates missing tables; your Neon database already has the old ones. New
+    columns are always nullable, so adding them never breaks existing rows.
+    """
+    added = []
+    inspector = inspect(engine)
+    for table in Base.metadata.sorted_tables:
+        if not inspector.has_table(table.name):
+            continue
+        existing = {c["name"] for c in inspector.get_columns(table.name)}
+        for column in table.columns:
+            if column.name in existing:
+                continue
+            if not column.nullable:
+                raise RuntimeError(f"New column {table.name}.{column.name} must be nullable")
+            ddl = column.type.compile(dialect=engine.dialect)
+            with engine.begin() as conn:
+                conn.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {column.name} {ddl}'))
+            added.append(f"{table.name}.{column.name}")
+    return added
 
 
 def get_session() -> Iterator[Session]:

@@ -53,6 +53,8 @@ class Instrument(Base):
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     prices_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     fundamentals_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    # A reference series (e.g. the long-history MSCI World for simulations), never proposed to buy.
+    is_reference: Mapped[bool | None] = mapped_column(default=None)
 
 
 class Price(Base):
@@ -119,6 +121,11 @@ class InvestorProfile(Base):
     core_share: Mapped[float] = mapped_column(Float)  # part of each payment going to the world ETF
     horizon_years: Mapped[int] = mapped_column(Integer)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    # Brick 3 (nullable: added to existing databases by db.add_missing_columns; None = default).
+    core_isin: Mapped[str | None] = mapped_column(String(12), default=None)  # the world ETF bought monthly
+    satellites_count: Mapped[int | None] = mapped_column(Integer, default=None)  # target number of stocks
+    max_position_share: Mapped[float | None] = mapped_column(Float, default=None)  # cap per stock
+    min_order_eur: Mapped[float | None] = mapped_column(Float, default=None)  # smallest useful order
 
 
 # --- Brick 2: analysis ---------------------------------------------------------------------------
@@ -133,3 +140,31 @@ class Analysis(Base):
     computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     score: Mapped[float | None] = mapped_column(Float, default=None)
     data: Mapped[dict] = mapped_column(JSON)
+
+
+# --- Brick 3: portfolio --------------------------------------------------------------------------
+
+class Transaction(Base):
+    """A buy or a sell done on Trade Republic, entered on the site. Positions are computed from these."""
+
+    __tablename__ = "transactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    day: Mapped[date] = mapped_column(Date, index=True)
+    isin: Mapped[str] = mapped_column(String(12), index=True)
+    side: Mapped[str] = mapped_column(String(4))  # "buy" or "sell"
+    quantity: Mapped[float] = mapped_column(Float)  # fractions allowed (savings plans buy fractions)
+    price_eur: Mapped[float] = mapped_column(Float)  # price per share paid, in euros
+    fees_eur: Mapped[float] = mapped_column(Float, default=0.0)
+    note: Mapped[str | None] = mapped_column(Text, default=None)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class SatelliteChoice(Base):
+    """Your say on the stock selection: "pinned" (keep it) or "excluded" (never propose it)."""
+
+    __tablename__ = "satellite_choices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    isin: Mapped[str] = mapped_column(String(12), unique=True)
+    status: Mapped[str] = mapped_column(String(8))

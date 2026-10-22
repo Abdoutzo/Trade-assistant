@@ -59,9 +59,13 @@ def add_instrument(session: Session, isin: str) -> Instrument:
     return instrument
 
 
-def list_instruments(session: Session) -> list[Instrument]:
+def list_instruments(session: Session, include_reference: bool = False) -> list[Instrument]:
+    """The universe; reference series (used only by simulations) are hidden unless asked for."""
     # "etf" sorts before "stock": the ETFs, core of the portfolio, come first.
-    return list(session.scalars(select(Instrument).order_by(Instrument.kind, Instrument.name)))
+    query = select(Instrument).order_by(Instrument.kind, Instrument.name)
+    if not include_reference:
+        query = query.where(Instrument.is_reference.is_not(True))
+    return list(session.scalars(query))
 
 
 def remove_instrument(session: Session, instrument: Instrument) -> None:

@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from . import __version__, auth, llm, profile, routes_analysis, routes_data
+from . import __version__, auth, llm, profile, routes_analysis, routes_data, routes_portfolio
 from .config import get_settings
 from .db import get_session, init_db, ping
 
@@ -120,6 +120,7 @@ app.include_router(public)
 app.include_router(private)
 app.include_router(routes_data.router)
 app.include_router(routes_analysis.router)
+app.include_router(routes_portfolio.router)
 
 
 # --- Website ------------------------------------------------------------------------------------

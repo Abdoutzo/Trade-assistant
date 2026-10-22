@@ -38,7 +38,7 @@ def _add(session: Session, isins: list[str]) -> int:
 
 def _refresh(session: Session, isins: list[str], force: bool) -> int:
     instruments = ([store.get_instrument(session, i) for i in isins] if isins
-                   else store.list_instruments(session))
+                   else store.list_instruments(session, include_reference=True))
     failures = 0
     for i in instruments:
         if i is None:

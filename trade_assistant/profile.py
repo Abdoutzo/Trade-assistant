@@ -16,6 +16,11 @@ class ProfileIn(BaseModel):
     monthly_amount_eur: float = Field(ge=0, le=1_000_000)
     core_share: float = Field(ge=0, le=1)
     horizon_years: int = Field(ge=1, le=60)
+    # Portfolio rules (brick 3); None keeps the default.
+    core_isin: str | None = Field(default=None, min_length=12, max_length=12)
+    satellites_count: int | None = Field(default=None, ge=0, le=15)
+    max_position_share: float | None = Field(default=None, ge=0.02, le=0.5)
+    min_order_eur: float | None = Field(default=None, ge=1, le=1000)
 
 
 def get_profile(session: Session) -> InvestorProfile:
@@ -33,14 +38,17 @@ def get_profile(session: Session) -> InvestorProfile:
 
 def update_profile(session: Session, data: ProfileIn) -> InvestorProfile:
     profile = get_profile(session)
-    for field, value in data.model_dump().items():
+    for field, value in data.model_dump(exclude_unset=True).items():  # untouched fields keep their value
         setattr(profile, field, value)
     session.commit()
     return profile
 
 
 def as_dict(profile: InvestorProfile) -> dict:
-    return {"account_type": profile.account_type, "initial_amount_eur": profile.initial_amount_eur,
+    from .portfolio.service import rules
+
+    return {**rules(profile),
+            "account_type": profile.account_type, "initial_amount_eur": profile.initial_amount_eur,
             "monthly_amount_eur": profile.monthly_amount_eur, "core_share": profile.core_share,
             "satellite_share": round(1 - profile.core_share, 4), "horizon_years": profile.horizon_years,
             "updated_at": profile.updated_at}

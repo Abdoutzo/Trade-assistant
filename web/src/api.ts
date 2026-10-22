@@ -74,3 +74,45 @@ export type InstrumentDetail = InstrumentSummary & {
 
 export type PricePoint = { day: string; close: number; adj_close: number };
 export type SeedState = { running: boolean; done: number; total: number; current: string | null; errors: string[] };
+
+export type MetricResult = {
+  key: string;
+  label: string;
+  fmt: "pct" | "x" | "num";
+  help: string;
+  good: number;
+  bad: number;
+  value: number | null;
+  score: number | null;
+  detail: string | null;
+};
+export type Pillar = { label: string; question: string; weight: number; score: number | null; metrics: MetricResult[] };
+export type AnalysisData = {
+  isin: string;
+  kind: "stock" | "etf";
+  score: number | null;
+  verdict: string;
+  pillars?: Record<string, Pillar>;
+  strengths?: string[];
+  weaknesses?: string[];
+  warnings: string[];
+  risk: Record<string, number>;
+  info: Record<string, number | null>;
+  info_labels: Record<string, [string, string]>;
+  valuation?: { market_cap?: number; report_currency?: string; pe_history?: [number, number][] };
+  yearly?: { years: string[]; rows: Record<string, ({ value: number; source: string } | null)[]> };
+  sector_medians: Record<string, number>;
+  computed_at: string;
+};
+export type RankingRow = {
+  isin: string;
+  name: string;
+  sector: string | null;
+  pea_eligible: boolean | null;
+  score: number | null;
+  verdict: string;
+  pillars: Record<string, number | null>;
+  metrics: Record<string, number | null>;
+  return_1y: number | null;
+};
+export type Ranking = { pillars: Record<string, string>; rows: RankingRow[] };

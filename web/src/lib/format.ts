@@ -17,3 +17,25 @@ export const amount = (x: number) => {
 
 export const changeColor = (x: number | null | undefined) =>
   x == null ? "text-slate-400" : x >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400";
+
+/** A metric value in its own unit: 0.153 -> "15,3 %", 17.7 -> "17,7x". */
+export const metricValue = (x: number | null | undefined, fmt: string) => {
+  if (x == null) return "-";
+  if (fmt === "pct") return pct(x).replace("+", "");
+  const s = x.toLocaleString("fr-FR", { maximumFractionDigits: fmt === "num" ? 2 : 1 });
+  return fmt === "x" ? `${s}x` : s;
+};
+
+export const scoreColor = (s: number | null | undefined) =>
+  s == null
+    ? "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+    : s >= 70
+      ? "bg-emerald-600 text-white"
+      : s >= 55
+        ? "bg-lime-500 text-white"
+        : s >= 40
+          ? "bg-amber-500 text-white"
+          : "bg-red-500 text-white";
+
+export const barColor = (s: number | null | undefined) =>
+  s == null ? "bg-slate-300" : s >= 70 ? "bg-emerald-500" : s >= 55 ? "bg-lime-500" : s >= 40 ? "bg-amber-500" : "bg-red-500";

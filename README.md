@@ -81,6 +81,28 @@ Charger l'univers de départ*. N'importe quel autre ISIN s'ajoute depuis la mêm
 
 En ligne de commande : `uv run python -m trade_assistant.data seed | add ISIN | refresh | show ISIN`.
 
+## Analyse (brique 2)
+
+Chaque entreprise reçoit une note sur 100, décomposée en cinq piliers :
+
+| Pilier | Poids | Mesures |
+|---|---|---|
+| Qualité | 30 % | ROIC, ROE, marge opérationnelle, marge de cash, conversion du bénéfice en cash (moyennes sur 3 ans) |
+| Solidité | 20 % | dette nette / EBITDA, couverture des intérêts, liquidité, fonds propres / bilan |
+| Croissance | 20 % | ventes sur 5 ans et sur 2 ans, bénéfice par action, régularité |
+| Valorisation | 20 % | PER, PER face à son historique, rendement du cash, VE / résultat d'exploitation, dividende |
+| Risque | 10 % | volatilité, pire baisse sur 5 ans, bêta face au MSCI Europe |
+
+Chaque mesure vaut 0 à un seuil « mauvais » et 100 à un seuil « bon » : les seuils et leur
+justification sont écrits dans [`analysis/scoring.py`](trade_assistant/analysis/scoring.py) et
+affichés sur le site. Règles de rigueur : un ratio ne mélange jamais deux sources (donc jamais IFRS
+et US GAAP) ; une série dans le temps n'est prolongée par l'autre source que si les deux
+concordent ; pas de note sans au moins trois piliers mesurés ; banques et assurances jugées sans
+les ratios industriels qui n'ont pas de sens pour elles.
+
+Sur le site : *Classement* (tri par note ou par pilier, filtre par secteur) et la carte *Analyse*
+de chaque fiche. En ligne de commande : `uv run python -m trade_assistant.data rank`.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -121,7 +143,7 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 |---|---|---|
 | 0 | Socle : API, site, connexion, routeur de LLM, base de données, CI, déploiement | fait |
 | 1 | Données : cours sur 10 ans, comptes annuels (rapports officiels ESEF + Yahoo), univers PEA | fait |
-| 2 | Analyse fondamentale : qualité, valorisation, risque, score expliqué | à venir |
+| 2 | Analyse fondamentale : ratios, risque, score /100 expliqué, classement | fait |
 | 3 | Portefeuille et backtest : allocation cœur/satellites, simulation historique | à venir |
 | 4 | Veille : actualités et publications, résumés sourcés, alertes | à venir |
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | à venir |

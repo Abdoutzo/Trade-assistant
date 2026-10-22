@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, InstrumentDetail, post, PricePoint } from "../api";
+import AnalysisCard from "../components/AnalysisCard";
 import Card from "../components/Card";
 import LineChart from "../components/LineChart";
 import PeaBadge from "../components/PeaBadge";
@@ -89,6 +90,8 @@ export default function InstrumentPage() {
           </div>
         </Card>
       </div>
+
+      <AnalysisCard isin={detail.isin} />
 
       <Card title="Cours">
         <div className="mb-3 flex flex-wrap items-center gap-1 text-sm">

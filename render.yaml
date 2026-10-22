@@ -1,0 +1,25 @@
+# Render blueprint: New > Blueprint > this repository. Free plan: the site sleeps after
+# 15 minutes without visits and wakes up in about a minute on the next one.
+services:
+  - type: web
+    name: trade-assistant
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

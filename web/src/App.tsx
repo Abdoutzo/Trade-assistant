@@ -1,0 +1,40 @@
+import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { api, Me } from "./api";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Placeholder from "./pages/Placeholder";
+import Settings from "./pages/Settings";
+
+export default function App() {
+  const [me, setMe] = useState<Me | null>(null);
+
+  const refresh = () =>
+    api<Me>("/auth/me")
+      .then(setMe)
+      .catch(() => setMe({ authenticated: false, login_enabled: true }));
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  if (!me) return <p className="p-8 text-slate-500">Chargement…</p>;
+  if (!me.authenticated) return <Login onLogin={refresh} />;
+
+  return (
+    <Routes>
+      <Route element={<Layout loginEnabled={me.login_enabled} onLogout={refresh} />}>
+        <Route index element={<Dashboard />} />
+        <Route path="portefeuille" element={<Placeholder title="Portefeuille" brick={3} />} />
+        <Route path="analyses" element={<Placeholder title="Analyses d'entreprises" brick={2} />} />
+        <Route path="actualites" element={<Placeholder title="Actualités et rapports" brick={4} />} />
+        <Route path="plan" element={<Placeholder title="Plan du mois" brick={5} />} />
+        <Route path="guide" element={<Placeholder title="Guide de l'investisseur" brick={6} />} />
+        <Route path="journal" element={<Placeholder title="Journal et performance" brick={8} />} />
+        <Route path="reglages" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}

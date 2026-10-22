@@ -35,6 +35,10 @@ class SourceError(RuntimeError):
     pass
 
 
+class NotFoundError(SourceError):
+    """HTTP 404: the source does not know this item (not an outage)."""
+
+
 def get_json(url: str, params: dict[str, Any] | None = None, tries: int = 3) -> Any:
     """GET a JSON document; waits 2 s, then 4 s, after a 429 or a server error."""
     for attempt in range(tries):
@@ -45,6 +49,8 @@ def get_json(url: str, params: dict[str, Any] | None = None, tries: int = 3) -> 
         else:
             if r.status_code == 200:
                 return r.json()
+            if r.status_code == 404:
+                raise NotFoundError(f"HTTP 404 on {r.request.url}")
             if r.status_code not in RETRY_STATUSES:
                 raise SourceError(f"HTTP {r.status_code} on {r.request.url}")
             error = f"HTTP {r.status_code}"

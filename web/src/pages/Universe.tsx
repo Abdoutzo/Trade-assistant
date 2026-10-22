@@ -135,8 +135,8 @@ export default function Universe() {
                       </div>
                     </td>
                     <td className="hidden text-slate-500 sm:table-cell">{i.sector ?? "-"}</td>
-                    <td className="text-right tabular-nums">{price(i.last_close, i.currency)}</td>
-                    <td className={`text-right tabular-nums ${changeColor(i.change_1y)}`}>{pct(i.change_1y)}</td>
+                    <td className="whitespace-nowrap text-right tabular-nums">{price(i.last_close, i.currency)}</td>
+                    <td className={`whitespace-nowrap pl-2 text-right tabular-nums ${changeColor(i.change_1y)}`}>{pct(i.change_1y)}</td>
                   </tr>
                 ))}
               </tbody>

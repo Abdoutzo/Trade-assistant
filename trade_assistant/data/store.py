@@ -60,7 +60,8 @@ def add_instrument(session: Session, isin: str) -> Instrument:
 
 
 def list_instruments(session: Session) -> list[Instrument]:
-    return list(session.scalars(select(Instrument).order_by(Instrument.kind.desc(), Instrument.name)))
+    # "etf" sorts before "stock": the ETFs, core of the portfolio, come first.
+    return list(session.scalars(select(Instrument).order_by(Instrument.kind, Instrument.name)))
 
 
 def remove_instrument(session: Session, instrument: Instrument) -> None:

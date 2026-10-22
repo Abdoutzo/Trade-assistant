@@ -98,6 +98,10 @@ def test_esef_filings_latest_per_year_and_converted_only():
         (date(2024, 12, 31), "2024.json"), (date(2025, 9, 30), "q3.json")]
 
 
+def test_esef_company_unknown_to_the_collector_has_no_report():
+    assert esef.filings("529900D6BF99LW9R2E68") == []  # 404, like German companies today
+
+
 def test_euronext_listing_to_yahoo_symbol():
     payload = [{"isin": "FR001400U5Q4", "mic": "XPAR",
                 "label": "<span class='name'><a href='/x'>AMUNDI PEA MONDE</a></span>"
@@ -125,7 +129,7 @@ def test_http_retries_after_429_then_gives_up():
 def test_http_does_not_retry_a_404():
     calls = []
     http.set_client(fake.fake_client(lambda r: calls.append(1) or httpx.Response(404)))
-    with pytest.raises(http.SourceError, match="404"):
+    with pytest.raises(http.NotFoundError):
         http.get_json("https://example.org")
     assert len(calls) == 1
 

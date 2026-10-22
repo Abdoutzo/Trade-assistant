@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 
-from .http import get_json
+from .http import NotFoundError, get_json
 from .yahoo import Figure
 
 BASE = "https://filings.xbrl.org"
@@ -50,8 +50,15 @@ class Filing:
 
 
 def filings(lei: str) -> list[Filing]:
-    """Annual reports of a company, oldest first, keeping one per fiscal year (the latest filed)."""
-    data = get_json(f"{BASE}/api/entities/{lei}/filings")
+    """Annual reports of a company, oldest first, keeping one per fiscal year (the latest filed).
+
+    filings.xbrl.org does not collect every country yet (German reports are missing, for one):
+    an unknown company simply has no report, Yahoo then provides the accounts.
+    """
+    try:
+        data = get_json(f"{BASE}/api/entities/{lei}/filings")
+    except NotFoundError:
+        return []
     by_year: dict[date, tuple[str, Filing]] = {}
     for item in data.get("data") or []:
         a = item.get("attributes", {})

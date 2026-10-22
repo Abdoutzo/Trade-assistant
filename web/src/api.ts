@@ -89,6 +89,7 @@ export type MetricResult = {
   value: number | null;
   score: number | null;
   detail: string | null;
+  chapter?: string | null;
 };
 export type Pillar = { label: string; question: string; weight: number; score: number | null; metrics: MetricResult[] };
 export type AnalysisData = {
@@ -245,3 +246,30 @@ export type MonthlyPlanData = {
 };
 export type PlanJob = { running: boolean; step: string | null; plan_id: number | null; error: string | null };
 export type PlanSummary = { id: number; month: string; created_at: string; status: string; model: string; source: string; orders: { name: string; amount: number }[] };
+
+export type GuideProgressState = { read: boolean; read_at: string | null; quiz_score: number | null; quiz_total: number | null };
+export type GuideChapterSummary = GuideProgressState & { id: string; title: string; level: string; minutes: number; questions: number };
+export type GuideLesson = { plan_id: number; month: string; status: string; title: string; text: string; warning: string };
+export type GuideSummary = { chapters: GuideChapterSummary[]; next: string | null; read: number; mastered: number; total: number; lessons: GuideLesson[] };
+export type GlossaryTerm = { key: string; label: string; definition: string; chapter?: string | null; chapter_title?: string | null };
+export type GuideChapter = GuideProgressState & {
+  id: string;
+  title: string;
+  level: string;
+  minutes: number;
+  number: number;
+  sections: { title: string; text: string }[];
+  takeaways: string[];
+  links: { path: string; label: string }[];
+  glossary: GlossaryTerm[];
+  quiz: { question: string; choices: string[] }[];
+  previous: string | null;
+  next: string | null;
+};
+export type QuizResult = {
+  score: number;
+  total: number;
+  best: number;
+  results: { chosen: number | null; correct: boolean; answer_index: number; explanation: string }[];
+};
+export type GuideAnswer = { answer: string; outside: boolean; chapters: { id: string; title: string }[]; unverified: number[]; model: string; warning: string };

@@ -243,3 +243,18 @@ class MonthlyPlan(Base):
     model: Mapped[str | None] = mapped_column(String(160), default=None)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     note: Mapped[str | None] = mapped_column(Text, default=None)  # your comment when deciding
+
+
+# --- Brick 6: the investor's guide ---------------------------------------------------------------
+
+class GuideProgress(Base):
+    """Where you are in the guide: chapters read and the best quiz score of each."""
+
+    __tablename__ = "guide_progress"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    chapter_id: Mapped[str] = mapped_column(String(32), unique=True)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+    quiz_score: Mapped[int | None] = mapped_column(Integer, default=None)  # best score so far
+    quiz_total: Mapped[int | None] = mapped_column(Integer, default=None)
+    quiz_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)

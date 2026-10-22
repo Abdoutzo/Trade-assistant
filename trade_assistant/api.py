@@ -23,6 +23,7 @@ from . import (
     routes_agent,
     routes_analysis,
     routes_data,
+    routes_guide,
     routes_news,
     routes_portfolio,
 )
@@ -133,6 +134,7 @@ app.include_router(routes_analysis.router)
 app.include_router(routes_portfolio.router)
 app.include_router(routes_news.router)
 app.include_router(routes_agent.router)
+app.include_router(routes_guide.router)
 
 
 # --- Website ------------------------------------------------------------------------------------

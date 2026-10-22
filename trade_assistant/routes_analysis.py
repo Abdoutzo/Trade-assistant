@@ -8,6 +8,7 @@ from . import auth
 from .analysis import scoring, service
 from .data import store
 from .db import get_engine, get_session
+from .guide.content import METRIC_CHAPTER
 
 router = APIRouter(prefix="/api", dependencies=[Depends(auth.require_auth)])
 
@@ -45,7 +46,10 @@ def instrument_analysis(isin: str, session: Session = Depends(get_session)) -> d
         raise HTTPException(404, f"{isin} n'est pas dans l'univers")
     data = service.get_analysis(session, instrument)
     medians = service.sector_medians(service.all_analyses(session)).get(instrument.sector or "", {})
-    return {**data, "sector_medians": medians, "info_labels": scoring.INFO}
+    pillars = {k: {**p, "metrics": [{**m, "chapter": METRIC_CHAPTER.get(m["key"])} for m in p["metrics"]]}
+               for k, p in (data.get("pillars") or {}).items()}  # "en savoir plus" links to the guide
+    return {**data, "pillars": pillars or data.get("pillars"), "sector_medians": medians,
+            "info_labels": scoring.INFO}
 
 
 @router.post("/analysis/refresh")

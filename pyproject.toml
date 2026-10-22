@@ -52,3 +52,5 @@ extend-immutable-calls = ["fastapi.Depends"]
 # The agent's facts and prompts are sentences for the model.
 "trade_assistant/agent/facts.py" = ["E501"]
 "trade_assistant/agent/roles.py" = ["E501"]
+# The guide is prose for the reader.
+"trade_assistant/guide/content.py" = ["E501"]

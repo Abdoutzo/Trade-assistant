@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { AnalysisData, api } from "../api";
 import { metricValue, pct } from "../lib/format";
 import Card from "./Card";
@@ -85,6 +86,11 @@ export default function AnalysisCard({ isin }: { isin: string }) {
                         </p>
                         {m.detail && <p className="text-slate-400">Calcul : {m.detail}</p>}
                         {m.value == null && <p className="text-slate-400">Donnée indisponible pour cette entreprise.</p>}
+                        {m.chapter && (
+                          <Link to={`/guide/${m.chapter}`} className="inline-block text-brand underline">
+                            En savoir plus dans le guide
+                          </Link>
+                        )}
                       </div>
                     </details>
                   ))}

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { api, Me } from "./api";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
+import GuidePage from "./pages/GuidePage";
 import InstrumentPage from "./pages/InstrumentPage";
 import Login from "./pages/Login";
 import NewsPage from "./pages/NewsPage";
@@ -38,7 +39,8 @@ export default function App() {
         <Route path="classement" element={<RankingPage />} />
         <Route path="actualites" element={<NewsPage />} />
         <Route path="plan" element={<PlanPage />} />
-        <Route path="guide" element={<Placeholder title="Guide de l'investisseur" brick={6} />} />
+        <Route path="guide" element={<GuidePage />} />
+        <Route path="guide/:id" element={<GuidePage />} />
         <Route path="journal" element={<Placeholder title="Journal et performance" brick={8} />} />
         <Route path="reglages" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -57,7 +57,7 @@ export default function Dashboard() {
           <p className="text-sm text-slate-500">
             {profile.account_type === "PEA"
               ? "Trade Republic, plans programmés sans frais"
-              : "Compte-titres : tout est accessible, mais 30 % d'impôt sur les gains"}
+              : "Compte-titres : tout est accessible, mais 31,4 % d'impôt sur les gains (2026)"}
           </p>
         </Card>
         <Card title="Versements">

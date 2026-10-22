@@ -118,6 +118,12 @@ export default function InstrumentPage() {
 
       {detail.kind === "stock" && (
         <Card title="Comptes annuels">
+          <p className="-mt-2 mb-3 text-xs text-slate-500">
+            Comment lire ces lignes :{" "}
+            <Link to="/guide/comptes" className="text-brand underline">
+              chapitre « Lire les comptes d'une entreprise » du guide
+            </Link>
+          </p>
           {rows.length === 0 ? (
             <p className="text-sm text-slate-500">
               Pas encore de comptes : ils se chargent après l'ajout (quelques secondes à quelques minutes). Clique sur

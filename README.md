@@ -12,7 +12,7 @@ quoi acheter et combien, explique pourquoi, et t'apprend à décider seul.
 
 | | |
 |---|---|
-| **Enveloppe** | PEA Trade Republic : 0 € de frais sur les plans programmés, fiscalité réduite après 5 ans (17,2 % au lieu de 30 %) |
+| **Enveloppe** | PEA Trade Republic : 0 € de frais sur les plans programmés, après 5 ans, gains exonérés d'impôt sur le revenu, seuls les prélèvements sociaux restent (18,6 % en 2026, au lieu de 31,4 % de flat tax) |
 | **Versements** | 500 € au départ, puis 100 € par mois (DCA) |
 | **Cœur (70 %)** | un ETF monde éligible PEA, en plan programmé |
 | **Satellites (30 %)** | 3 à 8 entreprises européennes choisies par l'agent, au maximum 10 % du portefeuille chacune |
@@ -153,6 +153,22 @@ mois* :
 6. **Toi** : tu valides ou refuses (avec un commentaire), puis tu règles les plans programmés dans
    Trade Republic grâce à la check-list. Rien n'est jamais exécuté automatiquement.
 
+## Guide (brique 6)
+
+Page *Guide* : de quoi comprendre chaque chiffre et chaque décision de l'outil.
+
+- **10 chapitres** courts, du débutant à l'avancé : bases, PEA et Trade Republic (fiscalité 2026),
+  versements mensuels, diversification, lire les comptes, qualité, prix, risque et biais, actualité,
+  utiliser l'agent. Écrits et vérifiés à la main, pas générés par l'IA.
+- **Quiz** à la fin de chaque chapitre, corrigé par le serveur avec l'explication de chaque réponse ;
+  ta progression et ton meilleur score sont gardés.
+- **Glossaire** d'environ 45 termes, avec recherche et lien vers le chapitre qui l'explique.
+- **En savoir plus** : chaque ratio de l'analyse d'une entreprise renvoie au chapitre qui l'explique.
+- **Leçons des plans** : la leçon écrite par le gérant chaque mois, clairement marquée « rédigée par
+  l'IA, peut contenir des erreurs ».
+- **Poser une question au guide** : l'IA répond à partir des chapitres seulement, cite ceux à lire,
+  et signale tout chiffre absent du guide.
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.
@@ -197,6 +213,6 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 3 | Portefeuille : positions, plans programmés du mois, simulation sur 10 ans et projection | fait |
 | 4 | Veille : actualités triées par l'IA, alertes, synthèse sourcée par entreprise | fait |
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | fait |
-| 6 | Guide de l'investisseur : parcours, glossaire, leçon liée à chaque décision | à venir |
+| 6 | Guide de l'investisseur : 10 chapitres avec quiz, glossaire, questions au guide, leçons des plans | fait |
 | 7 | Rapport mensuel par e-mail, lancé par GitHub Actions | à venir |
 | 8 | Journal : chaque recommandation comparée à l'ETF monde dans la durée | à venir |

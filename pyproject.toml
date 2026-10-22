@@ -47,3 +47,5 @@ extend-immutable-calls = ["fastapi.Depends"]
 [tool.ruff.lint.per-file-ignores]
 # Explanations written for the reader: long French sentences read better unbroken.
 "trade_assistant/analysis/scoring.py" = ["E501"]
+# Keyword lists and the prompt read better on one line each.
+"trade_assistant/news/triage.py" = ["E501"]

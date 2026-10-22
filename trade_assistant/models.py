@@ -168,3 +168,60 @@ class SatelliteChoice(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     isin: Mapped[str] = mapped_column(String(12), unique=True)
     status: Mapped[str] = mapped_column(String(8))
+
+
+# --- Brick 4: news -------------------------------------------------------------------------------
+
+class NewsItem(Base):
+    """An article about an instrument, with its triage (category, tone, importance, summary)."""
+
+    __tablename__ = "news_items"
+    __table_args__ = (UniqueConstraint("instrument_id", "url"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+    url: Mapped[str] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)
+    source: Mapped[str | None] = mapped_column(String(128), default=None)
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    lang: Mapped[str | None] = mapped_column(String(4), default=None)
+    snippet: Mapped[str | None] = mapped_column(Text, default=None)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    # Triage: None until done.
+    category: Mapped[str | None] = mapped_column(String(24), default=None)
+    sentiment: Mapped[int | None] = mapped_column(Integer, default=None)  # -2 .. +2
+    importance: Mapped[int | None] = mapped_column(Integer, default=None)  # 0 (noise) .. 3 (major)
+    summary: Mapped[str | None] = mapped_column(Text, default=None)  # one line, in French
+    triaged_by: Mapped[str | None] = mapped_column(String(128), default=None)  # model, or "mots-clés"
+
+
+class Alert(Base):
+    """Something that deserves your attention: a major news item or an unusual price move."""
+
+    __tablename__ = "alerts"
+    __table_args__ = (UniqueConstraint("instrument_id", "key"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+    key: Mapped[str] = mapped_column(String(160))  # dedupe: "news:<id>" or "price:<day>"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    kind: Mapped[str] = mapped_column(String(8))  # "news" | "price"
+    severity: Mapped[int] = mapped_column(Integer)  # 1 info, 2 attention, 3 important
+    title: Mapped[str] = mapped_column(Text)
+    detail: Mapped[str | None] = mapped_column(Text, default=None)
+    url: Mapped[str | None] = mapped_column(Text, default=None)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
+
+
+class Digest(Base):
+    """An AI summary of a company's recent news, every point tied to its sources."""
+
+    __tablename__ = "digests"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    points: Mapped[list] = mapped_column(JSON)  # [{"text", "sources": [n]}]
+    watch: Mapped[list] = mapped_column(JSON)  # [{"text", "sources": [n]}]
+    sources: Mapped[list] = mapped_column(JSON)  # [{"n", "title", "url", "source", "date"}]
+    model: Mapped[str] = mapped_column(String(160))

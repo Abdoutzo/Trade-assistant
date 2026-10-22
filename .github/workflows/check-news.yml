@@ -1,0 +1,26 @@
+# Lancement à la main depuis GitHub : onglet Actions > "Tester la veille" > Run workflow,
+# puis saisis un ISIN. Collecte les articles, les fait trier par l'IA et rédige la synthèse.
+name: Tester la veille
+
+on:
+  workflow_dispatch:
+    inputs:
+      isin:
+        description: "ISIN de l'entreprise (ex. FR0000120073 pour Air Liquide)"
+        required: true
+        default: FR0000120073
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen
+      - run: uv run python -m trade_assistant.news check "$ISIN"
+        env:
+          ISIN: ${{ inputs.isin }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}

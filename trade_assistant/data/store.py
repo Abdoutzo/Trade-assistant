@@ -9,7 +9,7 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from ..models import Analysis, EsefFiling, Fundamental, Instrument, Price, utcnow
+from ..models import Alert, Analysis, Digest, EsefFiling, Fundamental, Instrument, NewsItem, Price, utcnow
 from . import esef, euronext, gleif, universe, yahoo
 from .http import SourceError
 
@@ -69,7 +69,7 @@ def list_instruments(session: Session, include_reference: bool = False) -> list[
 
 
 def remove_instrument(session: Session, instrument: Instrument) -> None:
-    for table in (Price, Fundamental, EsefFiling, Analysis):
+    for table in (Price, Fundamental, EsefFiling, Analysis, NewsItem, Alert, Digest):
         session.execute(delete(table).where(table.instrument_id == instrument.id))
     session.delete(instrument)
     session.commit()

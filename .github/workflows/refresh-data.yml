@@ -1,4 +1,5 @@
-# Met à jour les cours (et les comptes de plus de 7 jours) directement dans la base Neon,
+# Met à jour les cours (et les comptes de plus de 7 jours), puis l'actualité triée par l'IA,
+# directement dans la base Neon,
 # chaque soir de semaine après la clôture des bourses européennes, même si le site dort.
 # Nécessite le secret DATABASE_URL (Settings > Secrets and variables > Actions).
 name: Actualiser les données
@@ -26,3 +27,11 @@ jobs:
       - run: uv run python -m trade_assistant.data refresh
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: News, AI triage and alerts
+        run: uv run python -m trade_assistant.news collect
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}

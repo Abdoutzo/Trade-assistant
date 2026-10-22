@@ -19,3 +19,11 @@ def test_normalize_url(url, expected):
 def test_init_db_creates_tables():
     db.init_db()
     assert db.ping()
+
+
+def test_empty_database_url_falls_back_to_sqlite(monkeypatch):
+    from trade_assistant import config
+
+    monkeypatch.setenv("DATABASE_URL", "  ")
+    config.get_settings.cache_clear()
+    assert config.get_settings().database_url == config.DEFAULT_DATABASE_URL

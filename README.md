@@ -46,6 +46,16 @@ Une seule clé suffit pour démarrer (NVIDIA). Chaque clé en plus ajoute un rel
 changent dans `.env` sans toucher au code. Chaque appel est journalisé (fournisseur, latence,
 tokens) pour suivre la consommation des offres gratuites.
 
+## Mettre ses clés d'API sans terminal
+
+Dans le dépôt GitHub : *Settings > Secrets and variables > Actions > New repository secret*, nom
+`NVIDIA_API_KEY` (puis `GOOGLE_API_KEY`, `GROQ_API_KEY` si tu en as). Pour vérifier qu'elles
+marchent : onglet *Actions > Vérifier les clés LLM > Run workflow*. Le résultat indique quel
+modèle a répondu pour chaque rôle, sans jamais afficher de clé.
+
+Ces secrets servent aux traitements lancés par GitHub (analyse et e-mail du mois). Pour le site
+en ligne, la même clé se met aussi dans Render (voir « Déployer gratuitement »).
+
 ## Lancer en local
 
 Prérequis : [uv](https://docs.astral.sh/uv/) et Node 22.

@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+DEFAULT_DATABASE_URL = "sqlite:///data/trade_assistant.db"
 
 
 class Settings(BaseSettings):
@@ -18,7 +21,7 @@ class Settings(BaseSettings):
     session_days: int = 30
 
     # SQLite locally; a postgresql+psycopg://... URL (Neon) in production.
-    database_url: str = "sqlite:///data/trade_assistant.db"
+    database_url: str = DEFAULT_DATABASE_URL
 
     # LLM keys: only the ones you have are needed, the router skips the others.
     nvidia_api_key: str = ""
@@ -36,6 +39,12 @@ class Settings(BaseSettings):
     monthly_amount_eur: float = 100.0
     core_share: float = 0.70
     account_type: str = "PEA"
+
+    @field_validator("database_url")
+    @classmethod
+    def _default_when_empty(cls, v: str) -> str:
+        # A host form left blank sets DATABASE_URL="": fall back to SQLite instead of crashing.
+        return v.strip() or DEFAULT_DATABASE_URL
 
     @property
     def is_prod(self) -> bool:

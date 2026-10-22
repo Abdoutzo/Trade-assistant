@@ -197,3 +197,12 @@ def test_api(monkeypatch):
         client.post(f"/api/alerts/{alerts[0]['id']}/read")
         assert len(client.get("/api/alerts?unread=true").json()) == len(alerts) - 1
         assert client.post("/api/instruments/FR0000120271/digest").status_code == 404
+
+
+def test_one_alert_per_story_and_good_news_is_only_informative(session, monkeypatch):
+    answer = json.dumps([{"n": k, "category": "actionnaires", "sentiment": 2, "importance": 3,
+                          "summary": f"Rachat d'actions de 4 Md€ (article {k})."} for k in (1, 2, 3)])
+    fake_llm(monkeypatch, lambda role, p: answer)
+    i = store.add_instrument(session, fake.ISIN)
+    assert service.refresh(session, i).alerts == 1  # three articles, one story
+    assert service.alerts(session)[0]["severity"] == 1

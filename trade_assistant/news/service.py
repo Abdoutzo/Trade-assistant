@@ -61,10 +61,18 @@ def _news_alert(session: Session, instrument: Instrument, item: NewsItem) -> boo
                 and item.category in RISK_CATEGORIES)
     if not (major or worrying):
         return False
-    severity = 3 if major and (item.sentiment or 0) < 0 else 2 if worrying or major else 1
+    # Bad and major: important. Bad and notable: attention. Good and major: for information.
+    severity = 3 if major and (item.sentiment or 0) < 0 else 2 if worrying else 1
+    label = triage.CATEGORIES.get(item.category or "autre")
+    # The same story is repeated by many outlets: one alert per company and category every 3 days.
+    recent = session.scalars(select(Alert.title).where(
+        Alert.instrument_id == instrument.id, Alert.kind == "news",
+        Alert.created_at >= utcnow() - timedelta(days=3)))
+    if any(title.startswith(f"{label} :") for title in recent):
+        return False
     return _alert(session, instrument, f"news:{item.url[:150]}", "news", severity,
-                  f"{triage.CATEGORIES.get(item.category or 'autre')} : {item.summary or item.title}",
-                  f"{item.source or ''}, {item.published_at:%d/%m/%Y}", item.url)
+                  f"{label} : {item.summary or item.title}",
+                  f"{item.source or ''}, {_aware(item.published_at):%d/%m/%Y}", item.url)
 
 
 def price_alert(session: Session, instrument: Instrument) -> bool:

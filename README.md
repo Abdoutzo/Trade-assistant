@@ -166,6 +166,21 @@ Chaque mois, l'outil traduit la répartition en plans que Trade Republic peut vr
 - **Sans terminal** : *Actions > Enregistrer un achat* enregistre un achat (le nombre de parts est
   déduit du montant) ou tes plans en cours (`ISIN:montant:fréquence`).
 
+## E-mail du mois (brique 7)
+
+Le 1er de chaque mois, juste après la préparation du plan, un e-mail résume : ton portefeuille, le
+plan et ce qu'il faut garder, modifier, créer ou supprimer dans Trade Republic, les objections graves,
+les alertes du mois, la leçon (signalée comme écrite par l'IA) et le prochain chapitre du guide.
+
+Configuration, une fois, dans *Settings > Secrets and variables > Actions* du dépôt :
+- `SMTP_USER` : ton adresse Gmail ;
+- `SMTP_PASSWORD` : un **mot de passe d'application** Gmail (compte Google > Sécurité > Validation
+  en deux étapes > Mots de passe des applications), pas ton mot de passe habituel ;
+- `SITE_URL` : l'adresse de ton site Render, pour les liens ; `MAIL_TO` si le destinataire diffère.
+
+Test : *Actions > Préparer le plan du mois > Run workflow*, action **email** (renvoie l'e-mail du
+dernier plan sans relancer l'agent). Sans ces secrets, l'envoi est simplement sauté.
+
 ## Guide (brique 6)
 
 Page *Guide* : de quoi comprendre chaque chiffre et chaque décision de l'outil.
@@ -227,5 +242,5 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 4 | Veille : actualités triées par l'IA, alertes, synthèse sourcée par entreprise | fait |
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | fait |
 | 6 | Guide de l'investisseur : 10 chapitres avec quiz, glossaire, questions au guide, leçons des plans | fait |
-| 7 | Rapport mensuel par e-mail, lancé par GitHub Actions | à venir |
+| 7 | E-mail mensuel : portefeuille, quoi faire dans Trade Republic, alertes, leçon | fait |
 | 8 | Journal : chaque recommandation comparée à l'ETF monde dans la durée | à venir |

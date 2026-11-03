@@ -56,3 +56,4 @@ extend-immutable-calls = ["fastapi.Depends"]
 "trade_assistant/guide/content.py" = ["E501"]
 # The advice for Trade Republic is written as sentences.
 "trade_assistant/portfolio/tradeplans.py" = ["E501"]
+"trade_assistant/report/render.py" = ["E501"]

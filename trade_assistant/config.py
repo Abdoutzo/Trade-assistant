@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     llm_chain_long_context: str = ""
     llm_chain_fast: str = ""
 
+    # Monthly e-mail (brick 7), through any SMTP server: Gmail with an app password by default.
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    mail_to: str = ""  # empty: sent to smtp_user
+    site_url: str = ""  # your Render address, for the links in the e-mail
+
     # Investment profile (validated in the plan: PEA, 70 % core ETF, 30 % stocks).
     initial_amount_eur: float = 500.0
     monthly_amount_eur: float = 100.0

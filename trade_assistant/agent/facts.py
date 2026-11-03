@@ -88,6 +88,10 @@ def build(session: Session) -> Context:
     for w in pf["warnings"]:
         ctx.general.append(ctx.add(f"Alerte portefeuille : {w}"))
     _trade_republic(ctx, session, r, profile.monthly_amount_eur * (1 - profile.core_share))
+    if proposal["out_of_reach"]:
+        far = ", ".join(f"{o['name']} ({o['price']:.0f} €)" for o in proposal["out_of_reach"] if o["price"])
+        ctx.general.append(ctx.add(f"Actions bien notées mais hors de portée (une action coûte plus que "
+                                   f"{proposal['quarter_budget']:.0f} €, le budget actions de 3 mois) : {far}."))
     lines = ", ".join(f"{o['name']} {o['amount']:.0f} €" for o in proposal["orders"])
     ctx.general.append(ctx.add(f"Plan calculé par les règles (brique 3) : {lines}."))
 
@@ -108,7 +112,8 @@ def build(session: Session) -> Context:
         if sum(1 for c in ctx.companies.values() if c.role == "alternative") >= ALTERNATIVES:
             break
         if (i.isin in ctx.companies or excluded.get(i.isin) == "excluded" or (data.get("score") or 0) < 55
-                or (profile.account_type == "PEA" and i.pea_eligible is not True)):
+                or (profile.account_type == "PEA" and i.pea_eligible is not True)
+                or not portfolio.affordable(session, profile, i.isin)):
             continue
         _company(ctx, session, (i, data), "alternative", None)
     return ctx

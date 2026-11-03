@@ -142,6 +142,12 @@ function PlanCard({ plan, onChange }: { plan: PlanData; onChange: () => void }) 
           </Link>{" "}
           (60/100 minimum, 2 par secteur au plus). Nombre d'actions, plafond par ligne et montant minimum se règlent dans Réglages.
         </p>
+        {plan.out_of_reach && plan.out_of_reach.length > 0 && (
+          <p className="mt-2 text-xs text-slate-500">
+            Hors de portée pour l'instant (une action coûte plus que ton budget actions sur 3 mois, {euros(plan.quarter_budget ?? 0)}) :{" "}
+            {plan.out_of_reach.map((o) => `${o.name}${o.price ? ` (${euros(o.price)})` : ""}`).join(", ")}.
+          </p>
+        )}
       </div>
     </Card>
   );

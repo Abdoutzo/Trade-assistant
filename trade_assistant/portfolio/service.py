@@ -171,8 +171,22 @@ def set_choice(session: Session, isin: str, status: str | None) -> None:
     session.commit()
 
 
-def selection(session: Session, held: dict[str, float] | None = None) -> list[dict]:
-    """The stocks to buy: held ones, pinned ones, then the best scores, 2 per sector at most."""
+def quarter_budget(profile: InvestorProfile) -> float:
+    """What the stocks receive in 3 months: the most a whole-share plan can spend at once."""
+    return 3 * profile.monthly_amount_eur * (1 - profile.core_share)
+
+
+def affordable(session: Session, profile: InvestorProfile, isin: str) -> bool:
+    """With whole shares, a stock whose share costs more than 3 months of stock budget is out of reach."""
+    if not rules(profile)["whole_shares"]:
+        return True
+    price = share_prices(session, [isin]).get(isin)
+    return price is None or price * tradeplans.MARGIN <= quarter_budget(profile)
+
+
+def selection(session: Session, held: dict[str, float] | None = None,
+              out_of_reach: list[dict] | None = None) -> list[dict]:
+    """The stocks to buy: held ones, pinned ones, then the best affordable scores, 2 per sector at most."""
     profile = get_profile(session)
     r = rules(profile)
     picks = choices(session)
@@ -206,6 +220,11 @@ def selection(session: Session, held: dict[str, float] | None = None) -> list[di
         too_many = per_sector.get(i.sector, 0) >= MAX_PER_SECTOR
         if not allowed(i) or (data.get("score") or 0) < MIN_SCORE or too_many:
             continue
+        if not affordable(session, profile, i.isin):
+            if out_of_reach is not None:
+                out_of_reach.append({"isin": i.isin, "name": i.name, "score": data.get("score"),
+                                     "price": share_prices(session, [i.isin]).get(i.isin)})
+            continue
         per_sector[i.sector] = per_sector.get(i.sector, 0) + 1
         add(i, data, f"note {data.get('score')}/100, parmi les meilleures de l'univers")
     return chosen
@@ -217,8 +236,9 @@ def plan(session: Session) -> dict:
     r = rules(profile)
     current = portfolio(session)
     values = {p["isin"]: p["value"] or 0.0 for p in current["positions"]}
+    out_of_reach: list[dict] = []
     targets = selection(session, {p["isin"]: p["value"] or 0.0 for p in current["positions"]
-                                  if p["role"] == "satellite"})
+                                  if p["role"] == "satellite"}, out_of_reach)
     orders = allocation.split(profile.monthly_amount_eur, profile.core_share, r["core_isin"],
                               [t["isin"] for t in targets], values, r["max_position_share"],
                               r["min_order_eur"])
@@ -230,6 +250,7 @@ def plan(session: Session) -> dict:
     first = None if current["positions"] else allocation_first(session, profile, r, targets)
     return {
         "monthly_amount": profile.monthly_amount_eur, "orders": lines, "targets": targets, "rules": r,
+        "out_of_reach": out_of_reach, "quarter_budget": quarter_budget(profile),
         "first_payment": first, **realize(session, lines, first),
     }
 

@@ -167,6 +167,8 @@ export type PlanData = TradeAdvice & {
   orders: PlanOrder[];
   targets: { isin: string; name: string; sector: string | null; score: number | null; pinned: boolean; held: boolean; reason: string }[];
   first_payment: PlanOrder[] | null;
+  out_of_reach?: { isin: string; name: string; score: number | null; price: number | null }[];
+  quarter_budget?: number;
 };
 export type SimStats = {
   final_value: number;

@@ -117,3 +117,15 @@ def test_command_line_plans(session, capsys):
     assert "345 € tous les 3 mois" in out and "80 € chaque mois" in out
     assert cli.main(["plans", f"{fake.ETF_ISIN}:80:yearly"]) == 1
     assert cli.main(["plans"]) == 0 and "80 € chaque mois" in capsys.readouterr().out
+
+
+def test_a_share_too_expensive_for_the_budget_is_out_of_reach(session):
+    from trade_assistant.profile import get_profile
+
+    profile = get_profile(session)  # 100 €/month, 70 % ETF: 90 € for stocks per quarter
+    assert service.quarter_budget(profile) == pytest.approx(90)
+    assert not service.affordable(session, profile, fake.ISIN)  # one share: 173 €
+    profile.monthly_amount_eur = 300  # 270 € per quarter: now within reach
+    assert service.affordable(session, profile, fake.ISIN)
+    profile.monthly_amount_eur, profile.whole_shares = 100, False  # fractions: always possible
+    assert service.affordable(session, profile, fake.ISIN)

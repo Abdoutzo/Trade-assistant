@@ -88,6 +88,11 @@ def build(session: Session) -> Context:
     for w in pf["warnings"]:
         ctx.general.append(ctx.add(f"Alerte portefeuille : {w}"))
     _trade_republic(ctx, session, r, profile.monthly_amount_eur * (1 - profile.core_share))
+    from ..journal import summary_line  # the journal itself builds on the portfolio
+
+    line = summary_line(session)
+    if line:
+        ctx.general.append(ctx.add(f"Journal (tes achats réels comparés aux mêmes sommes sur l'ETF monde) : {line}"))
     if proposal["out_of_reach"]:
         far = ", ".join(f"{o['name']} ({o['price']:.0f} €)" for o in proposal["out_of_reach"] if o["price"])
         ctx.general.append(ctx.add(f"Actions bien notées mais hors de portée (une action coûte plus que "

@@ -6,6 +6,7 @@ from datetime import timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .. import journal
 from ..agent import pipeline
 from ..guide import service as guide
 from ..models import MonthlyPlan, utcnow
@@ -36,6 +37,7 @@ def gather(session: Session) -> dict:
         "objections": sorted([o for o in (plan or {}).get("critic", []) if o["severity"] >= 3],
                              key=lambda o: o["name"]),
         "guide_next": nxt, "guide_read": summary["read"], "guide_total": summary["total"],
+        "journal": journal.summary_line(session),
     }
 
 

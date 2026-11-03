@@ -181,6 +181,15 @@ Configuration, une fois, dans *Settings > Secrets and variables > Actions* du d�
 Test : *Actions > Préparer le plan du mois > Run workflow*, action **email** (renvoie l'e-mail du
 dernier plan sans relancer l'agent). Sans ces secrets, l'envoi est simplement sauté.
 
+## Journal (brique 8)
+
+Chaque euro réellement investi est rejoué le même jour sur l'ETF monde seul (une vente retire les
+mêmes euros des deux côtés). La page *Journal* compare les deux : au total, ligne par ligne (chaque
+action contre la même somme sur l'ETF) et mois par mois (le plan validé ou refusé, ton commentaire,
+ce que tu as acheté et ce que ça vaut). Moins d'un an d'historique : le verdict dit qu'il est trop
+tôt. Ensuite, si l'écart reste négatif pendant des années, augmenter la part de l'ETF est la décision
+rationnelle. Le verdict figure aussi dans l'e-mail du mois et dans les faits de l'agent.
+
 ## Guide (brique 6)
 
 Page *Guide* : de quoi comprendre chaque chiffre et chaque décision de l'outil.
@@ -243,4 +252,4 @@ pas sur le site. L'image Docker fonctionne aussi chez n'importe quel autre hébe
 | 5 | Agent : analyste, avocat du diable, gérant, plan mensuel validé par toi | fait |
 | 6 | Guide de l'investisseur : 10 chapitres avec quiz, glossaire, questions au guide, leçons des plans | fait |
 | 7 | E-mail mensuel : portefeuille, quoi faire dans Trade Republic, alertes, leçon | fait |
-| 8 | Journal : chaque recommandation comparée à l'ETF monde dans la durée | à venir |
+| 8 | Journal : tes achats réels comparés aux mêmes sommes sur l'ETF monde | fait |

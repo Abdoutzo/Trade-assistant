@@ -51,6 +51,11 @@ def _sections(report: dict, site: str) -> list[tuple[str, list[str], str]]:
         html += "<p style='color:#64748b'>Aucun achat enregistré pour l'instant.</p>"
     out.append(("Ton portefeuille", lines, html))
 
+    if report.get("journal"):
+        url = _link(site, "/journal")
+        line = report["journal"] + (f" Détail : {url}" if url else "")
+        out.append(("Journal : toi contre l'ETF monde seul", [line], f"<p style='margin:4px 0'>{escape(line)}</p>"))
+
     if plan is None:
         out.append(("Plan du mois", ["Aucun plan préparé pour l'instant."], "<p>Aucun plan préparé pour l'instant.</p>"))
         return out

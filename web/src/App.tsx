@@ -5,9 +5,9 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import GuidePage from "./pages/GuidePage";
 import InstrumentPage from "./pages/InstrumentPage";
+import JournalPage from "./pages/JournalPage";
 import Login from "./pages/Login";
 import NewsPage from "./pages/NewsPage";
-import Placeholder from "./pages/Placeholder";
 import PlanPage from "./pages/PlanPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import RankingPage from "./pages/RankingPage";
@@ -41,7 +41,7 @@ export default function App() {
         <Route path="plan" element={<PlanPage />} />
         <Route path="guide" element={<GuidePage />} />
         <Route path="guide/:id" element={<GuidePage />} />
-        <Route path="journal" element={<Placeholder title="Journal et performance" brick={8} />} />
+        <Route path="journal" element={<JournalPage />} />
         <Route path="reglages" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

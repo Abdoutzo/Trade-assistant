@@ -286,3 +286,31 @@ export type QuizResult = {
   results: { chosen: number | null; correct: boolean; answer_index: number; explanation: string }[];
 };
 export type GuideAnswer = { answer: string; outside: boolean; chapters: { id: string; title: string }[]; unverified: number[]; model: string; warning: string };
+
+export type JournalLine = { isin: string; name: string; role: "core" | "satellite"; since: string; quantity: number; invested: number; value: number; if_etf: number; difference: number; return: number | null; etf_return: number | null };
+export type JournalMonth = {
+  month: string;
+  invested: number;
+  value: number;
+  if_etf: number;
+  difference: number;
+  trades: { name: string; side: "buy" | "sell"; quantity: number; amount: number }[];
+  plan: { id: number; status: string; note: string | null; source: string | null; orders: { name: string; amount: number }[] } | null;
+};
+export type JournalData =
+  | { empty: true; error?: string }
+  | {
+      empty: false;
+      since: string;
+      months: number;
+      value: number;
+      if_etf: number;
+      invested: number;
+      difference: number;
+      xirr: number | null;
+      etf_xirr: number | null;
+      verdict: string;
+      lines: JournalLine[];
+      by_month: JournalMonth[];
+      chart: { days: string[]; mine: number[]; etf: number[]; invested: number[] };
+    };

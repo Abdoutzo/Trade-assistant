@@ -1,0 +1,59 @@
+# Enregistre un achat Trade Republic dans ton portefeuille, sans terminal : onglet Actions >
+# "Enregistrer un achat" > Run workflow. Le montant est celui affiché par Trade Republic
+# ("You saved 433.08 €"). Sans quantité, le nombre de parts entières est déduit du cours du jour.
+# Relancer le même achat ne crée pas de doublon. "show" affiche seulement le portefeuille.
+name: Enregistrer un achat
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "add = enregistrer ; show = afficher le portefeuille"
+        type: choice
+        options: [add, show]
+        default: add
+      day:
+        description: "Date d'exécution (AAAA-MM-JJ)"
+        required: false
+      isin:
+        description: "ISIN (ex. FR001400U5Q4 pour l'ETF monde)"
+        required: false
+      amount:
+        description: "Montant en euros (ex. 433.08)"
+        required: false
+      quantity:
+        description: "Nombre de parts (laisser vide pour le déduire du cours)"
+        required: false
+      side:
+        description: "Achat ou vente"
+        type: choice
+        options: [buy, sell]
+        default: buy
+      fees:
+        description: "Frais en euros (0 pour un plan programmé)"
+        default: "0"
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --frozen --extra postgres
+      - name: Enregistrer
+        run: |
+          if [ "$ACTION" = "show" ]; then
+            uv run python -m trade_assistant.portfolio show
+          else
+            uv run python -m trade_assistant.portfolio add "$DAY" "$ISIN" "$AMOUNT" \
+              --side "$SIDE" --fees "$FEES" ${QUANTITY:+--quantity "$QUANTITY"}
+          fi
+        env:
+          ACTION: ${{ inputs.action }}
+          DAY: ${{ inputs.day }}
+          ISIN: ${{ inputs.isin }}
+          AMOUNT: ${{ inputs.amount }}
+          QUANTITY: ${{ inputs.quantity }}
+          SIDE: ${{ inputs.side }}
+          FEES: ${{ inputs.fees }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

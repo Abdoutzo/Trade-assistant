@@ -206,3 +206,39 @@ def test_profile_rules_kept_when_the_form_omits_them(client):
     client.put("/api/profile", json={**base, "satellites_count": 3, "min_order_eur": 15})
     p = client.put("/api/profile", json=base).json()
     assert (p["satellites_count"], p["min_order_eur"], p["max_position_share"]) == (3, 15, 0.10)
+
+
+# --- Command line (GitHub Actions) ---------------------------------------------------------------
+
+@pytest.fixture
+def universe(monkeypatch):
+    http.set_client(fake.fake_client())
+    monkeypatch.setattr(http.time, "sleep", lambda s: None)
+    db.init_db()
+    with Session(db.get_engine()) as s:
+        store.add_instrument(s, CORE)
+        store.refresh_prices(s, store.get_instrument(s, CORE))
+    yield
+    http.set_client(None)
+
+
+def test_command_line_deduces_whole_shares_and_ignores_duplicates(universe, capsys):
+    from trade_assistant.portfolio import __main__ as cli
+
+    # 2026-10-22 closes at 173 € in the fake data: 346.50 € is 2 whole shares.
+    assert cli.main(["add", "2026-10-23", CORE, "346.50"]) == 0
+    assert "2 part(s) déduite(s)" in capsys.readouterr().out
+    assert cli.main(["add", "2026-10-23", CORE, "346.50"]) == 0
+    assert "déjà enregistrée" in capsys.readouterr().out
+    with Session(db.get_engine()) as s:
+        [t] = service.transactions(s)
+        assert t.quantity == 2 and t.price_eur == pytest.approx(173.25)
+
+
+def test_command_line_refuses_an_amount_that_is_no_whole_number_of_shares(universe, capsys):
+    from trade_assistant.portfolio import __main__ as cli
+
+    assert cli.main(["add", "2026-10-23", CORE, "260"]) == 1  # 1.5 share at 173 €
+    assert "indique --quantity" in capsys.readouterr().err
+    assert cli.main(["add", "2026-10-23", CORE, "260", "--quantity", "1.5"]) == 0
+    assert cli.main(["add", "2026-10-23", "XX0000000000", "10", "--quantity", "1"]) == 1

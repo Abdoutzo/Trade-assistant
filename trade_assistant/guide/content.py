@@ -78,14 +78,21 @@ CHAPTERS: list[dict] = [
              "encadré, et c'est ce qui permet d'avoir le monde entier dans un PEA."),
             ("Trade Republic : les plans programmés sont gratuits",
              "Chez Trade Republic, un ordre ponctuel coûte **1 €** ; un **plan d'investissement programmé** ne coûte "
-             "rien et peut acheter des fractions d'action (10 € d'Hermès, même si une action vaut plus de 1 000 €). "
-             "D'où la règle de l'outil : des plans mensuels à montant fixe, que tu ne modifies que lorsque le plan "
-             "du mois change. Un ordre de 10 € à 1 € de frais, c'est 10 % perdus d'entrée."),
+             "rien, et tu peux le créer, le modifier ou le supprimer gratuitement. D'où la règle de l'outil : des plans "
+             "à montant fixe, que tu ne touches que lorsque le plan du mois change. Un ordre de 10 € à 1 € de frais, "
+             "c'est 10 % perdus d'entrée."),
+            ("Dans le PEA : des actions entières seulement",
+             "Dans le PEA, Trade Republic n'achète **que des actions entières**, pas de fractions : un plan de 10 € ne "
+             "peut pas acheter une action Inditex à 57 €, ni Hermès à plus de 1 000 €. Une part d'ETF monde ne coûte "
+             "que quelques euros, donc l'ETF s'achète chaque mois sans souci. Pour une action plus chère que son "
+             "montant mensuel, l'outil propose un **plan trimestriel** : l'argent s'accumule 3 mois en espèces, puis "
+             "achète une action entière. Une action trop chère pour ton budget laisse son argent à une autre."),
         ],
         "takeaways": [
             "Après 5 ans : 18,6 % sur les gains au lieu de 31,4 %. Ouvre le PEA tôt.",
             "Actions européennes et ETF éligibles uniquement ; les ETF monde passent par un swap.",
             "Plans programmés gratuits, ordres ponctuels à 1 € : privilégie les plans.",
+            "Dans le PEA, uniquement des actions entières : les actions chères passent en plan trimestriel.",
         ],
         "links": [("/portefeuille", "Portefeuille : tes plans programmés du mois"),
                   ("/reglages", "Réglages : enveloppe et horizon")],
@@ -100,6 +107,9 @@ CHAPTERS: list[dict] = [
             ("Pourquoi l'outil propose-t-il des plans programmés plutôt que des ordres chaque mois ?",
              ["Ils sont plus rapides", "Ils sont gratuits alors qu'un ordre coûte 1 €", "Ils rapportent plus"],
              1, "Sur 10 € investis, 1 € de frais représente 10 % : un handicap énorme. Les plans programmés sont gratuits."),
+            ("Une action coûte 57 € et ton budget pour elle est de 20 € par mois, dans un PEA Trade Republic. Que faire ?",
+             ["Un plan mensuel de 20 €", "Un plan trimestriel de 60 €", "Un ordre ponctuel de 20 € chaque mois"],
+             1, "Le PEA n'achète que des actions entières : 20 € ne suffisent jamais. En trimestriel, 60 € achètent une action, gratuitement."),
         ],
     },
     {
@@ -466,7 +476,7 @@ GLOSSARY: dict[str, tuple[str, str]] = {
     "pea": ("PEA", "Plan d'épargne en actions : après 5 ans, gains exonérés d'impôt sur le revenu (18,6 % de prélèvements sociaux en 2026). Versements plafonnés à 150 000 €."),
     "flat_tax": ("Flat tax (PFU)", "Prélèvement forfaitaire unique sur les gains de placement : 31,4 % en 2026 (12,8 % d'impôt + 18,6 % de prélèvements sociaux)."),
     "prelevements_sociaux": ("Prélèvements sociaux", "CSG, CRDS et prélèvement de solidarité sur les revenus du capital : 18,6 % en 2026 pour le PEA et le compte-titres."),
-    "plan_programme": ("Plan d'investissement programmé", "Achat automatique d'un montant fixe à intervalle régulier ; gratuit chez Trade Republic, avec achat de fractions."),
+    "plan_programme": ("Plan d'investissement programmé", "Achat automatique d'un montant fixe à intervalle régulier (mensuel, trimestriel...) ; gratuit chez Trade Republic. Dans le PEA, seules des actions entières sont achetées."),
     "replication_synthetique": ("Réplication synthétique", "Un ETF détient d'autres actions (européennes pour un PEA) et échange leur performance contre celle de l'indice visé grâce à un swap."),
     "interets_composes": ("Intérêts composés", "Les gains produisent eux-mêmes des gains : l'effet grandit avec le temps."),
     "dca": ("DCA (versements programmés)", "Investir la même somme à intervalle régulier, quel que soit le niveau du marché."),

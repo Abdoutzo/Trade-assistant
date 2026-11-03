@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, MonthlyPlanData, PlanJob, PlanSummary, post } from "../api";
 import Card from "../components/Card";
+import { TradeAdviceView } from "../components/TradeAdvice";
 import { euros } from "../lib/projection";
 
 const STATUS: Record<string, [string, string]> = {
@@ -173,7 +174,8 @@ export default function PlanPage() {
 
           {plan.status !== "rejected" && (
             <Card title={plan.status === "approved" ? "À faire dans Trade Republic" : "Ce qu'il faudra faire dans Trade Republic (après validation)"}>
-              <ol className="list-decimal space-y-1 pl-5 text-sm">
+              <TradeAdviceView advice={plan} />
+              <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm">
                 {plan.checklist.map((s) => (
                   <li key={s}>{s}</li>
                 ))}

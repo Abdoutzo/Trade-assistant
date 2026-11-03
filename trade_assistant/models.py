@@ -126,6 +126,8 @@ class InvestorProfile(Base):
     satellites_count: Mapped[int | None] = mapped_column(Integer, default=None)  # target number of stocks
     max_position_share: Mapped[float | None] = mapped_column(Float, default=None)  # cap per stock
     min_order_eur: Mapped[float | None] = mapped_column(Float, default=None)  # smallest useful order
+    # Trade Republic PEA buys whole shares only (None = deduced from the account type).
+    whole_shares: Mapped[bool | None] = mapped_column(default=None)
 
 
 # --- Brick 2: analysis ---------------------------------------------------------------------------
@@ -243,6 +245,19 @@ class MonthlyPlan(Base):
     model: Mapped[str | None] = mapped_column(String(160), default=None)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None)
     note: Mapped[str | None] = mapped_column(Text, default=None)  # your comment when deciding
+
+
+class TradePlan(Base):
+    """A savings plan as it runs today on Trade Republic, entered by you: the monthly advice starts
+    from it and only asks you to touch what must change."""
+
+    __tablename__ = "trade_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    isin: Mapped[str] = mapped_column(String(12), unique=True)
+    amount_eur: Mapped[float] = mapped_column(Float)
+    frequency: Mapped[str] = mapped_column(String(16))  # weekly | twice_monthly | monthly | quarterly
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
 # --- Brick 6: the investor's guide ---------------------------------------------------------------

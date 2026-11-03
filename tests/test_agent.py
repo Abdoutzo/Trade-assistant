@@ -207,3 +207,14 @@ def test_command_line_run_and_show(session, monkeypatch, capsys):
     assert "Plan n°1" in capsys.readouterr().out
     assert cli.main(["show"]) == 0
     assert "Statut : draft" in capsys.readouterr().out
+
+
+def test_plan_is_translated_for_trade_republic(session, monkeypatch):
+    answers(monkeypatch)
+    data = pipeline.run(session)
+    assert data["trade_plans"] and data["actions"][0]["kind"] == "create"
+    assert sum(p["monthly"] for p in data["trade_plans"]) == pytest.approx(100)
+    # The starting amount follows the agent's decision, in the same proportions.
+    first = {o["isin"]: o["amount"] for o in data["first_payment"]}
+    monthly = {o["isin"]: o["amount"] for o in data["orders"]}
+    assert first.keys() == monthly.keys() and first[CORE] == round(500 * monthly[CORE] / 100)

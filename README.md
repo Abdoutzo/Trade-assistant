@@ -153,6 +153,19 @@ mois* :
 6. **Toi** : tu valides ou refuses (avec un commentaire), puis tu règles les plans programmés dans
    Trade Republic grâce à la check-list. Rien n'est jamais exécuté automatiquement.
 
+## Plans Trade Republic
+
+Chaque mois, l'outil traduit la répartition en plans que Trade Republic peut vraiment exécuter :
+
+- **Actions entières dans le PEA** : une action plus chère que son montant mensuel passe en plan
+  trimestriel (l'argent s'accumule 3 mois, puis achète une action entière) ; une action hors de portée
+  laisse son argent à une autre action du plan ou à l'ETF. Réglable dans Réglages.
+- **Tes plans en cours** (Portefeuille > Mes plans Trade Republic) : le plan du mois ne te dit que ce
+  qui change (garder, modifier, créer, supprimer).
+- **L'agent** connaît ces contraintes, tes plans en cours et tes achats mois par mois.
+- **Sans terminal** : *Actions > Enregistrer un achat* enregistre un achat (le nombre de parts est
+  déduit du montant) ou tes plans en cours (`ISIN:montant:fréquence`).
+
 ## Guide (brique 6)
 
 Page *Guide* : de quoi comprendre chaque chiffre et chaque décision de l'outil.

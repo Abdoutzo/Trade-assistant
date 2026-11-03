@@ -54,6 +54,10 @@ Contraintes STRICTES (un plan qui ne les respecte pas sera rejeté et remplacé 
 - chaque action reçoit au moins le montant minimum par plan ;
 - seules les entreprises de la liste autorisée peuvent apparaître.
 
+Trade Republic (voir les faits « Contraintes » et « Plans en cours ») :
+- pars des plans en cours : la stabilité est une qualité, ne change d'action que pour une raison solide ;
+- avec des actions entières, préfère concentrer le budget actions sur 1 ou 2 entreprises dont le prix d'une action tient dans un trimestre de budget actions ; tes montants restent mensuels, l'outil les traduit en plans mensuels ou trimestriels.
+
 """ + COMMON + """
 
 Format :

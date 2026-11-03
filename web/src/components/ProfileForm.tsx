@@ -34,6 +34,7 @@ export default function ProfileForm() {
         satellites_count: form.satellites_count,
         max_position_share: form.max_position_share,
         min_order_eur: form.min_order_eur,
+        whole_shares: form.whole_shares,
       });
       setForm(saved);
       setMessage("Profil enregistré.");
@@ -108,6 +109,15 @@ export default function ProfileForm() {
         {Math.floor((form.monthly_amount_eur - core) / Math.max(form.min_order_eur, 1))} action(s) sont alimentées chaque mois ; les
         autres attendent leur tour.
       </p>
+      <label className="flex items-start gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" checked={form.whole_shares} onChange={(e) => set("whole_shares", e.target.checked)} className="mt-1" />
+        <span>
+          Actions entières uniquement (cas du PEA chez Trade Republic)
+          <span className="block text-xs text-slate-500">
+            Une action plus chère que son montant mensuel passe en plan trimestriel ; une action hors de portée laisse son argent à une autre.
+          </span>
+        </span>
+      </label>
       <div className="flex items-center gap-3 sm:col-span-2">
         <button className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:opacity-90">Enregistrer</button>
         {message && <span className="text-sm text-slate-600 dark:text-slate-300">{message}</span>}

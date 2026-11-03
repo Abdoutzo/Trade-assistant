@@ -11,9 +11,11 @@ from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from ..analysis import service as analysis
+from ..data import store
 from ..models import Instrument, utcnow
 from ..news import service as news
 from ..portfolio import service as portfolio
+from ..portfolio import tradeplans
 from ..profile import get_profile
 
 ALTERNATIVES = 3  # stocks outside the selection the manager may swap in
@@ -85,6 +87,7 @@ def build(session: Session) -> Context:
     ]
     for w in pf["warnings"]:
         ctx.general.append(ctx.add(f"Alerte portefeuille : {w}"))
+    _trade_republic(ctx, session, r, profile.monthly_amount_eur * (1 - profile.core_share))
     lines = ", ".join(f"{o['name']} {o['amount']:.0f} €" for o in proposal["orders"])
     ctx.general.append(ctx.add(f"Plan calculé par les règles (brique 3) : {lines}."))
 
@@ -111,6 +114,31 @@ def build(session: Session) -> Context:
     return ctx
 
 
+def _trade_republic(ctx: Context, session: Session, r: dict, satellite_budget: float) -> None:
+    """What can really be done on Trade Republic, what already runs, and what was bought when."""
+    if r["whole_shares"]:
+        ctx.general.append(ctx.add(
+            f"Contraintes Trade Republic (PEA) : actions entières uniquement, pas de fractions ; plans programmés "
+            f"gratuits, mensuels ou trimestriels au plus ; ordre ponctuel 1 €. Budget actions : "
+            f"{satellite_budget:.0f} € par mois, soit {3 * satellite_budget:.0f} € par trimestre : une action "
+            f"plus chère que cela ne peut pas être achetée par plan."))
+    running = tradeplans.current(session)
+    if running:
+        lines = ", ".join(f"{p['name']} {p['amount']:.0f} € {p['frequency_label']}" for p in running)
+        ctx.general.append(ctx.add(f"Plans en cours sur Trade Republic : {lines}."))
+    else:
+        ctx.general.append(ctx.add("Plans en cours sur Trade Republic : aucun enregistré dans l'outil."))
+    months: dict[str, list[str]] = {}
+    for t in portfolio.transactions(session):
+        instrument = store.get_instrument(session, t.isin)
+        verb = "achat" if t.side == "buy" else "vente"
+        months.setdefault(t.day.strftime("%Y-%m"), []).append(
+            f"{verb} {t.quantity:g} x {instrument.name if instrument else t.isin} ({t.quantity * t.price_eur:.0f} €)")
+    if months:
+        history = " ; ".join(f"{m} : {', '.join(items)}" for m, items in sorted(months.items())[-6:])
+        ctx.general.append(ctx.add(f"Opérations enregistrées, par mois : {history}."))
+
+
 def _company(ctx: Context, session: Session, entry: tuple[Instrument, dict] | None, role: str,
              position: dict | None) -> None:
     if entry is None:
@@ -127,6 +155,9 @@ def _company(ctx: Context, session: Session, entry: tuple[Instrument, dict] | No
         f"rendement du cash {_pct(_metric(data, 'fcf_yield'))}, dividende {_pct(_metric(data, 'dividend_yield'))}, "
         f"ROIC {_pct(_metric(data, 'roic'))}, croissance des ventes sur 2 ans {_pct(_metric(data, 'revenue_recent'))} "
         f"par an, dette nette / EBITDA {_num(_metric(data, 'net_debt_to_ebitda'))}."))
+    price = portfolio.share_prices(session, [i.isin]).get(i.isin)
+    if price:
+        c.facts.append(ctx.add(f"{i.name} : prix d'une action {_num(price, 2)} €."))
     info = data.get("info") or {}
     c.facts.append(ctx.add(
         f"{i.name} : performance 1 an {_pct(info.get('return_1y'))}, 5 ans {_pct(info.get('return_5y'))} par an, "

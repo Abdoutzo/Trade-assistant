@@ -3,6 +3,7 @@
     python -m trade_assistant.portfolio add 2026-11-02 ES0148396007 56.96 --quantity 1
     python -m trade_assistant.portfolio add 2026-11-02 FR001400U5Q4 433.08
     python -m trade_assistant.portfolio show
+    python -m trade_assistant.portfolio plans "FR001400U5Q4:80:monthly,ES0148396007:60:quarterly"
 
 The amount is what Trade Republic shows ("You saved 433.08 €"). Without --quantity, the number of
 shares is deduced from the closing price of that day: in a PEA, Trade Republic only buys whole
@@ -18,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from ..data import store
 from ..db import get_engine, init_db
-from . import service
+from . import service, tradeplans
 
 TOLERANCE = 0.03  # the deduced price must stay within 3 % of the day's close
 
@@ -59,6 +60,9 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--fees", type=float, default=0.0)
     add.add_argument("--note")
     sub.add_parser("show", help="afficher les transactions et les positions")
+    plans = sub.add_parser("plans", help="enregistrer tes plans Trade Republic en cours")
+    plans.add_argument("plans", nargs="?", default="",
+                       help="ISIN:montant:fréquence (monthly, quarterly...), séparés par des virgules")
     args = parser.parse_args(argv)
 
     init_db()
@@ -82,6 +86,20 @@ def main(argv: list[str] | None = None) -> int:
             except (LookupError, ValueError) as e:
                 print(f"Erreur : {e}", file=sys.stderr)
                 return 1
+        if args.command == "plans" and args.plans.strip():
+            try:
+                parsed = []
+                for item in args.plans.split(","):
+                    isin, amount, frequency = (x.strip() for x in item.split(":"))
+                    parsed.append({"isin": isin.upper(), "amount": float(amount), "frequency": frequency})
+                tradeplans.replace(session, parsed)
+            except (LookupError, ValueError) as e:
+                print(f"Erreur : {e} (format : ISIN:montant:fréquence, séparés par des virgules)",
+                      file=sys.stderr)
+                return 1
+        print("Plans Trade Republic en cours :")
+        for p in tradeplans.current(session) or [{"name": "aucun", "amount": 0, "frequency_label": ""}]:
+            print(f"  {p['name']} : {p['amount']:.0f} € {p['frequency_label']}")
         print("\nTransactions :")
         for t in service.transactions(session):
             print(f"  {t.day}  {t.side:4}  {t.quantity:>8g} x {t.isin}  à {t.price_eur:.4f} €"

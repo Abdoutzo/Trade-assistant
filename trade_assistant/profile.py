@@ -21,6 +21,7 @@ class ProfileIn(BaseModel):
     satellites_count: int | None = Field(default=None, ge=0, le=15)
     max_position_share: float | None = Field(default=None, ge=0.02, le=0.5)
     min_order_eur: float | None = Field(default=None, ge=1, le=1000)
+    whole_shares: bool | None = None
 
 
 def get_profile(session: Session) -> InvestorProfile:

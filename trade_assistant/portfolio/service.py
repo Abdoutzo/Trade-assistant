@@ -12,7 +12,7 @@ from ..data import store, yahoo
 from ..data.http import SourceError
 from ..models import Instrument, InvestorProfile, SatelliteChoice, Transaction
 from ..profile import get_profile
-from . import allocation, backtest, positions
+from . import allocation, backtest, positions, tradeplans
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +33,8 @@ def rules(profile: InvestorProfile) -> dict:
         "satellites_count": pick(profile.satellites_count, DEFAULTS["satellites_count"]),
         "max_position_share": pick(profile.max_position_share, DEFAULTS["max_position_share"]),
         "min_order_eur": pick(profile.min_order_eur, DEFAULTS["min_order_eur"]),
+        # The PEA at Trade Republic only buys whole shares; a CTO accepts fractions.
+        "whole_shares": pick(profile.whole_shares, profile.account_type == "PEA"),
     }
 
 
@@ -53,6 +55,23 @@ def _eur_price(session: Session, instrument: Instrument) -> tuple[float, date] |
         except SourceError:
             return None
     return series[-1].close * rate, series[-1].day
+
+
+def share_prices(session: Session, isins: list[str]) -> dict[str, float | None]:
+    """Price of one share in euros (last close): what a whole-share plan must cover."""
+    out = {}
+    for isin in isins:
+        instrument = store.get_instrument(session, isin)
+        priced = _eur_price(session, instrument) if instrument else None
+        out[isin] = priced[0] if priced else None
+    return out
+
+
+def realize(session: Session, orders: list[dict], first_payment: list[dict] | None = None) -> dict:
+    """The monthly amounts turned into plans Trade Republic can run, compared with your current plans."""
+    r = rules(get_profile(session))
+    return tradeplans.realize(orders, share_prices(session, [o["isin"] for o in orders]), r["whole_shares"],
+                              tradeplans.current(session), first_payment)
 
 
 def portfolio(session: Session) -> dict:
@@ -206,12 +225,12 @@ def plan(session: Session) -> dict:
     names = {t["isin"]: t["name"] for t in targets}
     core = store.get_instrument(session, r["core_isin"])
     names[r["core_isin"]] = core.name if core else r["core_isin"]
+    lines = [{"isin": o.isin, "name": names.get(o.isin, o.isin), "amount": o.amount_eur, "role": o.role,
+              "reason": o.reason} for o in orders if o.amount_eur > 0]
+    first = None if current["positions"] else allocation_first(session, profile, r, targets)
     return {
-        "monthly_amount": profile.monthly_amount_eur,
-        "orders": [{"isin": o.isin, "name": names.get(o.isin, o.isin), "amount": o.amount_eur, "role": o.role,
-                    "reason": o.reason} for o in orders if o.amount_eur > 0],
-        "targets": targets, "rules": r,
-        "first_payment": None if current["positions"] else allocation_first(session, profile, r, targets),
+        "monthly_amount": profile.monthly_amount_eur, "orders": lines, "targets": targets, "rules": r,
+        "first_payment": first, **realize(session, lines, first),
     }
 
 

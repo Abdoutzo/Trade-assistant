@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from . import auth
 from .db import get_session
 from .models import Transaction
-from .portfolio import service
+from .portfolio import service, tradeplans
 
 router = APIRouter(prefix="/api/portfolio", dependencies=[Depends(auth.require_auth)])
 
@@ -85,3 +85,25 @@ def simulation(body: SimulationIn, session: Session = Depends(get_session)) -> d
         return service.simulation(session, body.years, body.satellites)
     except LookupError as e:
         raise HTTPException(503, str(e)) from e
+
+
+class TradePlanIn(BaseModel):
+    isin: str = Field(min_length=12, max_length=12)
+    amount: float = Field(gt=0, le=100_000)
+    frequency: Literal["weekly", "twice_monthly", "monthly", "quarterly"]
+
+
+@router.get("/trade-plans")
+def trade_plans(session: Session = Depends(get_session)) -> list[dict]:
+    """Your savings plans as they run today on Trade Republic."""
+    return tradeplans.current(session)
+
+
+@router.put("/trade-plans")
+def set_trade_plans(body: list[TradePlanIn], session: Session = Depends(get_session)) -> list[dict]:
+    try:
+        return tradeplans.replace(session, [p.model_dump() for p in body])
+    except LookupError as e:
+        raise HTTPException(404, str(e)) from e
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e

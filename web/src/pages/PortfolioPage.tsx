@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api, InstrumentSummary, PlanData, PortfolioData, post, Projection, put, SimStats, SimulationData } from "../api";
 import Card from "../components/Card";
 import MultiLineChart from "../components/MultiLineChart";
+import { TradeAdviceView, TradePlansCard } from "../components/TradeAdvice";
 import { changeColor, pct, unitEuros } from "../lib/format";
 import { euros } from "../lib/projection";
 
@@ -55,6 +56,7 @@ export default function PortfolioPage() {
       )}
 
       <PlanCard plan={plan} onChange={load} />
+      <TradePlansCard universe={universe} onChange={load} />
       <PositionsCard pf={pf} />
       <TransactionsCard pf={pf} universe={universe} names={names} onChange={load} />
       <SimulationCard />
@@ -71,26 +73,28 @@ function PlanCard({ plan, onChange }: { plan: PlanData; onChange: () => void }) 
   return (
     <Card title={`Tes plans d'investissement ce mois-ci (${euros(plan.monthly_amount)})`}>
       <p className="mb-3 text-sm text-slate-500">
-        Sur Trade Republic, les <strong>plans d'investissement programmés</strong> sont gratuits ; un ordre manuel coûte 1 €. Crée
-        (ou ajuste) un plan mensuel par ligne ci-dessous, puis ne touche à rien tant que la proposition ne change pas.
+        Calcul par les règles, sans l'agent : sur Trade Republic, les <strong>plans d'investissement programmés</strong> sont gratuits ;
+        un ordre manuel coûte 1 €. Le plan du mois (l'agent) peut corriger cette proposition.
       </p>
-      <table className="w-full text-sm">
-        <tbody>
-          {plan.orders.map((o) => (
-            <tr key={o.isin} className="border-t border-slate-100 dark:border-slate-800">
-              <td className="py-2">
-                <Link to={`/analyses/${o.isin}`} className="font-medium hover:text-brand">
-                  {o.name}
-                </Link>
-                <div className="text-xs text-slate-500">
-                  <span className="font-mono">{o.isin}</span> · {o.role === "core" ? "cœur" : "satellite"} · {o.reason}
-                </div>
-              </td>
-              <td className="whitespace-nowrap text-right text-lg font-semibold tabular-nums">{euros(o.amount)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TradeAdviceView advice={plan} />
+      <details className="mt-3 text-sm">
+        <summary className="cursor-pointer text-slate-500">Répartition mensuelle avant contraintes Trade Republic</summary>
+        <table className="mt-2 w-full">
+          <tbody>
+            {plan.orders.map((o) => (
+              <tr key={o.isin} className="border-t border-slate-100 dark:border-slate-800">
+                <td className="py-1">
+                  <Link to={`/analyses/${o.isin}`} className="hover:text-brand">
+                    {o.name}
+                  </Link>
+                  <div className="text-xs text-slate-500">{o.reason}</div>
+                </td>
+                <td className="whitespace-nowrap text-right tabular-nums">{euros(o.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
 
       {plan.first_payment && (
         <div className="mt-4 rounded-md bg-slate-50 p-3 text-sm dark:bg-slate-800/50">
@@ -256,7 +260,7 @@ function TransactionsCard({
         {message && <span className="col-span-2 self-center text-sm text-slate-600 dark:text-slate-300 sm:col-span-4">{message}</span>}
       </form>
       <p className="mt-2 text-xs text-slate-500">
-        Dans Trade Republic : Profil &gt; Transactions, chaque exécution indique la quantité (souvent fractionnée) et le prix. Un plan
+        Dans Trade Republic : Profil &gt; Transactions, chaque exécution indique la quantité (entière dans le PEA) et le prix. Un plan
         programmé = une transaction par exécution, sans frais.
       </p>
       {pf.transactions.length > 0 && (

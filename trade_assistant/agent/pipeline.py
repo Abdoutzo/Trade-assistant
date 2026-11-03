@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from .. import llm
 from ..models import MonthlyPlan, utcnow
+from ..portfolio import service as portfolio
 from . import checks, facts, roles
 
 log = logging.getLogger(__name__)
@@ -30,21 +31,21 @@ def _companies_block(ctx: facts.Context) -> str:
     return "\n".join(parts)
 
 
-def _checklist(orders: list[dict], first: list[dict] | None) -> list[str]:
-    steps = ["Ouvre Trade Republic > ton PEA > Plans d'investissement."]
-    for o in orders:
-        steps.append(f"Plan mensuel {o['name']} ({o['isin']}) : {o['amount']:.0f} € "
-                     "(crée-le s'il n'existe pas, sinon vérifie le montant).")
-    steps.append("Supprime les plans des valeurs qui ne figurent plus dans la liste.")
-    if first:
-        steps.append("Premier versement (ordres ponctuels, 1 € de frais chacun) : "
-                     + ", ".join(f"{o['name']} {o['amount']:.0f} €" for o in first) + ".")
-    steps.append("Après les premières exécutions, enregistre les achats dans Portefeuille > Transactions.")
-    return steps
-
-
 def run(session: Session, progress: Callable[[str], None] = lambda step: None) -> dict:
     """Prepares this month's plan. Never raises because of the AI: at worst, the calculated plan."""
+    data = _decide(session, progress)
+    if data["first_payment"] and data["source"] == "agent":
+        # The starting amount follows the decision, in the same proportions as the monthly orders.
+        initial = sum(o["amount"] for o in data["first_payment"])
+        data["first_payment"] = [{"isin": o["isin"], "name": o["name"], "role": o["role"],
+                                  "amount": round(initial * o["amount"] / data["budget"])}
+                                 for o in data["orders"]]
+    # What Trade Republic can run (whole shares, plan frequencies) and what changes from your plans.
+    data.update(portfolio.realize(session, data["orders"], data["first_payment"]))
+    return data
+
+
+def _decide(session: Session, progress: Callable[[str], None]) -> dict:
     progress("Rassemblement des faits (notes, portefeuille, actualités)")
     ctx = facts.build(session)
     # The AI takes minutes: never keep a database transaction open meanwhile (Neon closes it).
@@ -129,7 +130,6 @@ def run(session: Session, progress: Callable[[str], None] = lambda step: None) -
                        "facts": checks.known_facts(o["facts"], ctx),
                        "unverified": checks.unverified(o["reason"], ctx)}
                       for o in sorted(check.orders, key=lambda o: (o["isin"] != core_isin, -o["amount"]))]
-    data["checklist"] = _checklist(data["orders"], data["first_payment"])
     return data
 
 
@@ -174,7 +174,6 @@ def _fallback(data: dict, ctx: facts.Context, names: dict, reason: str) -> dict:
     data["orders"] = [{"isin": o["isin"], "name": o["name"], "amount": o["amount"], "role": o["role"],
                        "reason": o.get("reason"), "facts": [], "unverified": []}
                       for o in ctx.proposal["orders"]]
-    data["checklist"] = _checklist(data["orders"], data["first_payment"])
     return data
 
 

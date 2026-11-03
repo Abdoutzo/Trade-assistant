@@ -37,6 +37,7 @@ export type Profile = {
   satellites_count: number;
   max_position_share: number;
   min_order_eur: number;
+  whole_shares: boolean;
 };
 export type LlmStatus = Record<string, { provider: string; model: string }[]>;
 export type LlmTest = { provider: string; model: string; answer: string };
@@ -151,7 +152,17 @@ export type PortfolioData = {
   rules: { core_isin: string; satellites_count: number; max_position_share: number; min_order_eur: number };
 };
 export type PlanOrder = { isin: string; name: string; amount: number; role: "core" | "satellite"; reason?: string };
-export type PlanData = {
+export type Frequency = "weekly" | "twice_monthly" | "monthly" | "quarterly";
+export const FREQUENCY_LABELS: Record<Frequency, string> = {
+  weekly: "chaque semaine",
+  twice_monthly: "deux fois par mois",
+  monthly: "chaque mois",
+  quarterly: "tous les 3 mois",
+};
+export type TradePlanRow = { isin: string; name: string; amount: number; frequency: Frequency; frequency_label: string; monthly: number; role?: "core" | "satellite"; share_price?: number | null };
+export type PlanAction = { kind: "keep" | "update" | "create" | "delete"; isin: string; name: string; text: string };
+export type TradeAdvice = { trade_plans: TradePlanRow[]; plan_notes: string[]; actions: PlanAction[] };
+export type PlanData = TradeAdvice & {
   monthly_amount: number;
   orders: PlanOrder[];
   targets: { isin: string; name: string; sector: string | null; score: number | null; pinned: boolean; held: boolean; reason: string }[];
@@ -215,7 +226,7 @@ export type DigestData = {
 };
 
 export type AgentOrder = { isin: string; name: string; amount: number; role: "core" | "satellite"; reason: string | null; facts: string[]; unverified: number[] };
-export type MonthlyPlanData = {
+export type MonthlyPlanData = Partial<TradeAdvice> & {
   id: number;
   month: string;
   created_at: string;

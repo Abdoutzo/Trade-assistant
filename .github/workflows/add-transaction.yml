@@ -1,16 +1,17 @@
 # Enregistre un achat Trade Republic dans ton portefeuille, sans terminal : onglet Actions >
 # "Enregistrer un achat" > Run workflow. Le montant est celui affiché par Trade Republic
 # ("You saved 433.08 €"). Sans quantité, le nombre de parts entières est déduit du cours du jour.
-# Relancer le même achat ne crée pas de doublon. "show" affiche seulement le portefeuille.
+# Relancer le même achat ne crée pas de doublon. "plans" enregistre tes plans d'investissement en
+# cours (ex. FR001400U5Q4:80:monthly,ES0148396007:60:quarterly). "show" affiche le portefeuille.
 name: Enregistrer un achat
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: "add = enregistrer ; show = afficher le portefeuille"
+        description: "add = enregistrer un achat ; plans = enregistrer tes plans en cours ; show = afficher"
         type: choice
-        options: [add, show]
+        options: [add, plans, show]
         default: add
       day:
         description: "Date d'exécution (AAAA-MM-JJ)"
@@ -32,6 +33,9 @@ on:
       fees:
         description: "Frais en euros (0 pour un plan programmé)"
         default: "0"
+      plans:
+        description: "Pour plans : ISIN:montant:fréquence, séparés par des virgules (monthly, quarterly...)"
+        required: false
 
 jobs:
   record:
@@ -44,6 +48,8 @@ jobs:
         run: |
           if [ "$ACTION" = "show" ]; then
             uv run python -m trade_assistant.portfolio show
+          elif [ "$ACTION" = "plans" ]; then
+            uv run python -m trade_assistant.portfolio plans "$PLANS"
           else
             uv run python -m trade_assistant.portfolio add "$DAY" "$ISIN" "$AMOUNT" \
               --side "$SIDE" --fees "$FEES" ${QUANTITY:+--quantity "$QUANTITY"}
@@ -56,4 +62,5 @@ jobs:
           QUANTITY: ${{ inputs.quantity }}
           SIDE: ${{ inputs.side }}
           FEES: ${{ inputs.fees }}
+          PLANS: ${{ inputs.plans }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
